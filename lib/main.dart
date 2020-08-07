@@ -1,8 +1,8 @@
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
-import 'package:reach_me/splash.dart';
-import 'package:reach_me/home.dart';
-import 'package:reach_me/login.dart';
+import 'file:///C:/Users/HP/AndroidStudioProjects/reach_me/lib/screens/splash.dart';
+import 'file:///C:/Users/HP/AndroidStudioProjects/reach_me/lib/screens/home.dart';
+import 'file:///C:/Users/HP/AndroidStudioProjects/reach_me/lib/screens/login.dart';
 
 void main() {
   runApp(MyApp());
@@ -14,7 +14,7 @@ class MyApp extends StatelessWidget {
   Widget build(BuildContext context) {
     return MaterialApp(
       debugShowCheckedModeBanner: false,
-      title: 'Flutter Demo',
+      title: 'ReachMe',
       theme: ThemeData(
         primarySwatch: Colors.blue,
       ),
