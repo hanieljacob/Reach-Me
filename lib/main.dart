@@ -1,8 +1,8 @@
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
-import 'file:///C:/Users/HP/AndroidStudioProjects/reach_me/lib/screens/splash.dart';
-import 'file:///C:/Users/HP/AndroidStudioProjects/reach_me/lib/screens/home.dart';
-import 'file:///C:/Users/HP/AndroidStudioProjects/reach_me/lib/screens/login.dart';
+import './screens/splash.dart';
+import './screens/home.dart';
+import './screens/login.dart';
 
 void main() {
   runApp(MyApp());
@@ -22,7 +22,6 @@ class MyApp extends StatelessWidget {
     );
   }
 }
-
 class MainScreen extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
