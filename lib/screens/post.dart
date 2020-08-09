@@ -13,7 +13,7 @@ import 'package:cloud_firestore/cloud_firestore.dart';
 String Email;
 class PostPage extends StatefulWidget {
 
-  void getEmail(String email){
+  void getRes(String email){
     Email = email;
     print("ABC: "+Email);
   }
@@ -144,7 +144,7 @@ class _PostPageState extends State<PostPage> {
           FloatingActionButton.extended(
             label: Text("Post"),
             onPressed: (){
-              print(Email);
+              print("CDE: "+Email);
               firestoreInstance.collection("Users").document(Email).collection("Posts").document("Post 1").setData({});
             },
             heroTag: UniqueKey(),

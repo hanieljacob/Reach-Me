@@ -9,6 +9,7 @@ class AuthProvider{
   GoogleSignInAccount account;
   final FirebaseAuth _auth = FirebaseAuth.instance;
   final firestoreInstance = Firestore.instance;
+  GoogleSignIn googleSignIn = GoogleSignIn();
 
   Future<bool> signInWithEmail(String email, String password) async{
     try {
@@ -28,6 +29,7 @@ class AuthProvider{
 
   Future<void> logout() async{
     try {
+      googleSignIn.disconnect();
       await _auth.signOut();
     }
     catch(e){
@@ -37,23 +39,21 @@ class AuthProvider{
 
   Future<bool> loginWithGoogle() async{
     try{
-      GoogleSignIn googleSignIn = GoogleSignIn();
       account = await googleSignIn.signIn();
       PostPage postPage = PostPage();
-      postPage.getEmail(account.email.toString());
-      firestoreInstance.collection("Users").document(account.email).setData({});
 
       if(account == null)
         return false;
       res = await _auth.signInWithCredential(GoogleAuthProvider.getCredential(
           idToken: (await account.authentication).idToken, accessToken: (await account.authentication).accessToken));
-
+      firestoreInstance.collection("Users").document(res.user.uid).setData({});
+      postPage.getRes(res.user.uid);
       if(res.user==null)
         return false;
       else
         return true;
     }catch(e){
-      print('Error logging in with google');
+      print(e);
       return false;
     }
   }
