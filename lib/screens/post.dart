@@ -8,16 +8,29 @@ import '../components/bottom_navbar.dart';
 import 'package:image_picker/image_picker.dart';
 import 'package:image_cropper/image_cropper.dart';
 import 'package:flutter_image_compress/flutter_image_compress.dart';
+import 'package:cloud_firestore/cloud_firestore.dart';
 
+String Email;
 class PostPage extends StatefulWidget {
+
+  void getEmail(String email){
+    Email = email;
+    print("ABC: "+Email);
+  }
   @override
   _PostPageState createState() => _PostPageState();
 }
 
 class _PostPageState extends State<PostPage> {
+
+  @override
+
   int _selectedIndex=2;
 
   File _image;
+
+  final firestoreInstance = Firestore.instance;
+
 
   getImageFile(ImageSource source) async {
 
@@ -32,7 +45,7 @@ class _PostPageState extends State<PostPage> {
 
     File croppedFile = await ImageCropper.cropImage(
       sourcePath: file.path,
-//      aspectRatioPresets: [CropAspectRatioPreset.square],
+      aspectRatioPresets: [CropAspectRatioPreset.original],
       maxWidth: 512,
       maxHeight: 512,
     );
@@ -41,7 +54,7 @@ class _PostPageState extends State<PostPage> {
 
     var result = await FlutterImageCompress.compressAndGetFile(
       croppedFile.path,
-      croppedFile.path,
+      file.path,
       quality: 50,
     );
 
@@ -127,6 +140,14 @@ class _PostPageState extends State<PostPage> {
             onPressed: () => getImageFile(ImageSource.gallery),
             heroTag: UniqueKey(),
             icon: Icon(Icons.photo_library),
+          ),
+          FloatingActionButton.extended(
+            label: Text("Post"),
+            onPressed: (){
+              print(Email);
+              firestoreInstance.collection("Users").document(Email).collection("Posts").document("Post 1").setData({});
+            },
+            heroTag: UniqueKey(),
           )
         ],
       ),

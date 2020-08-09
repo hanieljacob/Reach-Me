@@ -33,6 +33,7 @@ dependencies:
   image_picker: ^0.6.0+10
   image_cropper: ^1.0.2
   flutter_image_compress: ^0.6.0
+  cloud_firestore: ^0.13.7
 dev_dependencies:
   flutter_test:
     sdk: flutter

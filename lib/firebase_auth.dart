@@ -1,8 +1,15 @@
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:google_sign_in/google_sign_in.dart';
+import 'package:cloud_firestore/cloud_firestore.dart';
+import 'screens/post.dart';
 
 class AuthProvider{
+
+  AuthResult res;
+  GoogleSignInAccount account;
   final FirebaseAuth _auth = FirebaseAuth.instance;
+  final firestoreInstance = Firestore.instance;
+
   Future<bool> signInWithEmail(String email, String password) async{
     try {
       AuthResult result = await _auth.signInWithEmailAndPassword(
@@ -18,6 +25,7 @@ class AuthProvider{
     }
   }
 
+
   Future<void> logout() async{
     try {
       await _auth.signOut();
@@ -30,11 +38,16 @@ class AuthProvider{
   Future<bool> loginWithGoogle() async{
     try{
       GoogleSignIn googleSignIn = GoogleSignIn();
-      GoogleSignInAccount account = await googleSignIn.signIn();
+      account = await googleSignIn.signIn();
+      PostPage postPage = PostPage();
+      postPage.getEmail(account.email.toString());
+      firestoreInstance.collection("Users").document(account.email).setData({});
+
       if(account == null)
         return false;
-        AuthResult res = await _auth.signInWithCredential(GoogleAuthProvider.getCredential(
+      res = await _auth.signInWithCredential(GoogleAuthProvider.getCredential(
           idToken: (await account.authentication).idToken, accessToken: (await account.authentication).accessToken));
+
       if(res.user==null)
         return false;
       else

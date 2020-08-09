@@ -5,6 +5,7 @@ import 'post.dart';
 import 'notifications.dart';
 import 'settings.dart';
 import '../components/bottom_navbar.dart';
+import '../firebase_auth.dart';
 
 class HomePage extends StatefulWidget {
   @override
@@ -13,7 +14,6 @@ class HomePage extends StatefulWidget {
 
 class _HomePageState extends State<HomePage> {
   int _selectedIndex = 0;
-
   @override
   Widget build(BuildContext context) {
     return _selectedIndex == 0 ? Scaffold(
@@ -52,7 +52,7 @@ class _HomePageState extends State<HomePage> {
           children: <Widget>[
             SizedBox(height: 250,),
             Center(
-              child: Text("Follow accounts to view content", style: TextStyle(
+              child: Text("", style: TextStyle(
                   fontSize: 18,
                   fontWeight: FontWeight.w400
               ),
