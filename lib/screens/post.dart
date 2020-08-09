@@ -9,6 +9,7 @@ import 'package:image_picker/image_picker.dart';
 import 'package:image_cropper/image_cropper.dart';
 import 'package:flutter_image_compress/flutter_image_compress.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
+import '../services/upload.dart';
 
 String Email;
 class PostPage extends StatefulWidget {
@@ -31,6 +32,7 @@ class _PostPageState extends State<PostPage> {
 
   final firestoreInstance = Firestore.instance;
 
+  TextEditingController textEditingController = TextEditingController();
 
   getImageFile(ImageSource source) async {
 
@@ -55,7 +57,7 @@ class _PostPageState extends State<PostPage> {
     var result = await FlutterImageCompress.compressAndGetFile(
       croppedFile.path,
       file.path,
-      quality: 50,
+      quality: 100,
     );
 
     setState(() {
@@ -101,13 +103,7 @@ class _PostPageState extends State<PostPage> {
             ),
             //fillColor: Colors.green
           ),
-          validator: (val) {
-            if(val.length==0) {
-              return "Empty";
-            }else{
-              return null;
-            }
-          },
+          controller: textEditingController,
           ),
       ),
             Center(
@@ -144,8 +140,10 @@ class _PostPageState extends State<PostPage> {
           FloatingActionButton.extended(
             label: Text("Post"),
             onPressed: (){
+              Uploader uploader = Uploader(file: _image,uid:Email);
+              uploader.startUpload();
               print("CDE: "+Email);
-              firestoreInstance.collection("Users").document(Email).collection("Posts").document("Post 1").setData({});
+              firestoreInstance.collection("Users").document(Email).collection("Posts").document("Post 1").setData({'Text':textEditingController.text});
             },
             heroTag: UniqueKey(),
           )
