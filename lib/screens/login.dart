@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:reach_me/firebase_auth.dart';
+import 'package:reach_me/screens/splash.dart';
 
 class LoginPage extends StatefulWidget {
   @override
@@ -9,6 +10,7 @@ class LoginPage extends StatefulWidget {
 class _LoginPageState extends State<LoginPage> {
   TextEditingController _emailController;
   TextEditingController _passwordController;
+  bool loading = false;
 
   @override
   void initState()
@@ -19,7 +21,7 @@ class _LoginPageState extends State<LoginPage> {
   }
   @override
   Widget build(BuildContext context) {
-    return Scaffold(
+    return loading==true?SplashPage():Scaffold(
       appBar: AppBar(
         title: Text('Login'),
       ),
@@ -63,7 +65,13 @@ class _LoginPageState extends State<LoginPage> {
                 color: Color(0xFFdd4b39),
                 child: Text('Login with Google'),
                 onPressed: () async{
+                  setState(() {
+                    loading = true;
+                  });
                   await AuthProvider().loginWithGoogle();
+                  setState(() {
+                    loading = false;
+                  });
                 },
               ),
             ],

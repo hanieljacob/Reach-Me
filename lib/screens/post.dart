@@ -10,28 +10,25 @@ import 'package:image_cropper/image_cropper.dart';
 import 'package:flutter_image_compress/flutter_image_compress.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
 import '../services/upload.dart';
+import 'package:reach_me/firebase_auth.dart';
 
-String Email;
 class PostPage extends StatefulWidget {
 
-  void getRes(String email){
-    Email = email;
-    print("ABC: "+Email);
-  }
+//
+//  void storeUserId(String Uid) {
+//    uid = Uid;
+//    print("ABC: " + uid);
+//  }
+
   @override
   _PostPageState createState() => _PostPageState();
 }
 
 class _PostPageState extends State<PostPage> {
 
-  @override
-
   int _selectedIndex=2;
-
   File _image;
-
   final firestoreInstance = Firestore.instance;
-
   TextEditingController textEditingController = TextEditingController();
 
   getImageFile(ImageSource source) async {
@@ -47,7 +44,7 @@ class _PostPageState extends State<PostPage> {
 
     File croppedFile = await ImageCropper.cropImage(
       sourcePath: file.path,
-      aspectRatioPresets: [CropAspectRatioPreset.original],
+      aspectRatioPresets: [CropAspectRatioPreset.ratio4x3],
       maxWidth: 512,
       maxHeight: 512,
     );
@@ -140,10 +137,15 @@ class _PostPageState extends State<PostPage> {
           FloatingActionButton.extended(
             label: Text("Post"),
             onPressed: (){
-              Uploader uploader = Uploader(file: _image,uid:Email);
-              uploader.startUpload();
-              print("CDE: "+Email);
-              firestoreInstance.collection("Users").document(Email).collection("Posts").document("Post 1").setData({'Text':textEditingController.text});
+              print("hello "+Uid);
+              if(_image!=null) {
+                Uploader uploader = Uploader(file: _image, uid: Uid);
+                uploader.startUpload();
+                print("CDE: " + Uid);
+                firestoreInstance.collection("Users").document(Uid).collection(
+                    "Posts").document("Post 1").setData(
+                    {'Text': textEditingController.text});
+              }
             },
             heroTag: UniqueKey(),
           )

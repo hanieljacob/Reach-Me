@@ -5,15 +5,32 @@ import 'post.dart';
 import 'notifications.dart';
 import 'settings.dart';
 import '../components/bottom_navbar.dart';
-import '../firebase_auth.dart';
+import 'package:firebase_storage/firebase_storage.dart';
+import '../services/receive.dart';
 
 class HomePage extends StatefulWidget {
+
   @override
   _HomePageState createState() => _HomePageState();
 }
 
 class _HomePageState extends State<HomePage> {
+  String url;
   int _selectedIndex = 0;
+
+
+  void reload(){
+    refresh().then((val) => setState(() {
+      url = val;
+    }));
+  }
+
+  Future<String> refresh() async{
+    //url = await Receive().getData();
+//    print("Refresh "+url);
+    return await Receive().getData();
+  }
+
   @override
   Widget build(BuildContext context) {
     return _selectedIndex == 0 ? Scaffold(
@@ -58,6 +75,15 @@ class _HomePageState extends State<HomePage> {
               ),
               ),
             ),
+        url!=null?Image.network(url):SizedBox(height: 2),
+        Center(
+          child: RaisedButton(
+            child: Text('Refresh'),
+            onPressed: () {
+              reload();
+            },
+          ),
+        ),
             Center(
               child: RaisedButton(
                 child: Text('Log out'),

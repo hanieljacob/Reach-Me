@@ -3,8 +3,8 @@ import 'package:google_sign_in/google_sign_in.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'screens/post.dart';
 
+String Uid;
 class AuthProvider{
-
   AuthResult res;
   GoogleSignInAccount account;
   final FirebaseAuth _auth = FirebaseAuth.instance;
@@ -29,7 +29,7 @@ class AuthProvider{
 
   Future<void> logout() async{
     try {
-      googleSignIn.disconnect();
+      await googleSignIn.disconnect();
       await _auth.signOut();
     }
     catch(e){
@@ -47,7 +47,8 @@ class AuthProvider{
       res = await _auth.signInWithCredential(GoogleAuthProvider.getCredential(
           idToken: (await account.authentication).idToken, accessToken: (await account.authentication).accessToken));
       firestoreInstance.collection("Users").document(res.user.uid).setData({});
-      postPage.getRes(res.user.uid);
+      Uid = res.user.uid;
+//      postPage.storeUserId(res.user.uid);
       if(res.user==null)
         return false;
       else
@@ -56,5 +57,10 @@ class AuthProvider{
       print(e);
       return false;
     }
+  }
+
+  String getUserId(){
+    print("Hello"+res.user.uid);
+    return res.user.uid;
   }
 }
