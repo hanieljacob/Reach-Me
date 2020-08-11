@@ -1,4 +1,6 @@
+import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
+import 'package:reach_me/services/database.dart';
 import 'home.dart';
 import 'search.dart';
 import 'dart:io';
@@ -11,14 +13,10 @@ import 'package:flutter_image_compress/flutter_image_compress.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
 import '../services/upload.dart';
 import 'package:reach_me/firebase_auth.dart';
+import 'package:provider/provider.dart';
+
 
 class PostPage extends StatefulWidget {
-
-//
-//  void storeUserId(String Uid) {
-//    uid = Uid;
-//    print("ABC: " + uid);
-//  }
 
   @override
   _PostPageState createState() => _PostPageState();
@@ -26,6 +24,10 @@ class PostPage extends StatefulWidget {
 
 class _PostPageState extends State<PostPage> {
 
+  Database db = Database();
+  String Uid;
+  int numberOfPosts;
+  int postNumber;
   int _selectedIndex=2;
   File _image;
   final firestoreInstance = Firestore.instance;
@@ -65,6 +67,8 @@ class _PostPageState extends State<PostPage> {
 
   @override
   Widget build(BuildContext context) {
+    var user = Provider.of<FirebaseUser>(context);
+    Uid = user.uid;
     return _selectedIndex == 2 ? Scaffold(
       bottomNavigationBar: BottomNavBar(
           selectedIndex: 2, onItemTapped: (index) {
@@ -136,15 +140,17 @@ class _PostPageState extends State<PostPage> {
           ),
           FloatingActionButton.extended(
             label: Text("Post"),
-            onPressed: (){
+            onPressed: () async{
               print("hello "+Uid);
               if(_image!=null) {
+                await db.createNewPost(Uid, textEditingController.text);
                 Uploader uploader = Uploader(file: _image, uid: Uid);
                 uploader.startUpload();
                 print("CDE: " + Uid);
-                firestoreInstance.collection("Users").document(Uid).collection(
-                    "Posts").document("Post 1").setData(
-                    {'Text': textEditingController.text});
+
+//                firestoreInstance.collection("Users").document(Uid).collection(
+//                    "Posts").document("Post 1").setData(
+//                    {'Text': textEditingController.text});
               }
             },
             heroTag: UniqueKey(),

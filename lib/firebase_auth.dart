@@ -2,9 +2,11 @@ import 'package:firebase_auth/firebase_auth.dart';
 import 'package:google_sign_in/google_sign_in.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'screens/post.dart';
+import './services/database.dart';
 
-String Uid;
+//String Uid;
 class AuthProvider{
+  Database db = Database();
   AuthResult res;
   GoogleSignInAccount account;
   final FirebaseAuth _auth = FirebaseAuth.instance;
@@ -46,8 +48,9 @@ class AuthProvider{
         return false;
       res = await _auth.signInWithCredential(GoogleAuthProvider.getCredential(
           idToken: (await account.authentication).idToken, accessToken: (await account.authentication).accessToken));
-      firestoreInstance.collection("Users").document(res.user.uid).setData({});
-      Uid = res.user.uid;
+      db.createNewUserData(res.user);
+//      firestoreInstance.collection("Users").document(res.user.uid).setData({});
+//      Uid = res.user.uid;
 //      postPage.storeUserId(res.user.uid);
       if(res.user==null)
         return false;

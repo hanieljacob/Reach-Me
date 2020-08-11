@@ -1,3 +1,5 @@
+import 'package:firebase_auth/firebase_auth.dart';
+import 'package:flutter/cupertino.dart';
 import 'package:reach_me/firebase_auth.dart';
 import 'package:flutter/material.dart';
 import 'search.dart';
@@ -7,6 +9,7 @@ import 'settings.dart';
 import '../components/bottom_navbar.dart';
 import 'package:firebase_storage/firebase_storage.dart';
 import '../services/receive.dart';
+import 'package:provider/provider.dart';
 
 class HomePage extends StatefulWidget {
 
@@ -17,22 +20,24 @@ class HomePage extends StatefulWidget {
 class _HomePageState extends State<HomePage> {
   String url;
   int _selectedIndex = 0;
+  String uid;
 
 
-  void reload(){
-    refresh().then((val) => setState(() {
+  void reload(String uid){
+    refresh(uid).then((val) => setState(() {
       url = val;
     }));
   }
 
-  Future<String> refresh() async{
+  Future<String> refresh(String uid) async{
     //url = await Receive().getData();
 //    print("Refresh "+url);
-    return await Receive().getData();
+    return await Receive().getData(uid);
   }
 
   @override
   Widget build(BuildContext context) {
+    var user = Provider.of<FirebaseUser>(context);
     return _selectedIndex == 0 ? Scaffold(
       bottomNavigationBar: BottomNavBar(
           selectedIndex: 0, onItemTapped: (index) {
@@ -75,12 +80,16 @@ class _HomePageState extends State<HomePage> {
               ),
               ),
             ),
-        url!=null?Image.network(url):SizedBox(height: 2),
+        url!=null?Padding(
+          padding: EdgeInsets.symmetric(vertical: 10),
+            child: Image.network(url)
+        ):SizedBox(height: 2),
         Center(
           child: RaisedButton(
             child: Text('Refresh'),
             onPressed: () {
-              reload();
+              uid = user.uid;
+              reload(uid);
             },
           ),
         ),
