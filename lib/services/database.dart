@@ -1,40 +1,98 @@
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:firebase_auth/firebase_auth.dart';
-class Database{
+import '../models/User.dart';
+
+class Database {
   CollectionReference userRef = Firestore.instance.collection("Users");
-  Future createNewUserData(FirebaseUser user) async{
-    if(await userRef.document(user.uid).get().then((value) => !value.exists)){
-      return await userRef.document(user.uid).setData({"uid":user.uid,"posts":[],"name":user.displayName});
+  Future createNewUserData(FirebaseUser user) async {
+    if (await userRef.document(user.uid).get().then((value) => !value.exists)) {
+      return await userRef.document(user.uid).setData({
+        "uid": user.uid,
+        "posts": [],
+        "name": user.displayName,
+        'userphoto': user.photoUrl,
+      });
     }
   }
 
-  Future createNewPost(String uid, String text, String url) async{
+  Future getPostCount(String uid) async {
     List post;
-    int length;
-//    await userRef.document(uid).updateData({'posts':FieldValue.arrayUnion([{'text':text}])});
-    await userRef.document(uid).get().then((value) => value.data.forEach((key, value) {
-      if(key == "posts"){
-        post = value;
-        post.add({'text':text,'postURL':url});
-        userRef.document(uid).updateData({'posts':post});
-        length = post.length;
-      }
-    }));
-//    print("DBLen: "+length.toString());
-    return length;
+    int postCount;
+    await userRef
+        .document(uid)
+        .get()
+        .then((value) => value.data.forEach((key, value) {
+              if (key == "posts") {
+                post = value;
+                // print(post.length);
+                postCount = post.length + 1;
+              }
+            }));
+    print('Hello' + postCount.toString());
+    return postCount;
   }
 
-  Future noOfPost(String uid) async{
+  Future getPosts(String uid) async {
     List post;
-    int length;
+    await userRef
+        .document(uid)
+        .get()
+        .then((value) => value.data.forEach((key, value) {
+              if (key == "posts") {
+                post = value;
+              }
+            }));
+    // print('Hello' + postCount.toString());
+
+    return post;
+  }
+
+  Future createNewPost(String uid, String text, String url) async {
+    List post;
+    // int postCount;
 //    await userRef.document(uid).updateData({'posts':FieldValue.arrayUnion([{'text':text}])});
-    await userRef.document(uid).get().then((value) => value.data.forEach((key, value) {
-      if(key == "posts"){
-        post = value;
-        length = post.length;
-      }
-    }));
-//    print("DBLen: "+length.toString());
-    return length;
+    userRef
+        .document(uid)
+        .get()
+        .then((value) => value.data.forEach((key, value) {
+              if (key == "posts") {
+                post = value;
+                post.add({
+                  'text': text,
+                  'photoUrl': url,
+                });
+                userRef.document(uid).updateData({'posts': post});
+                // print(post.length);
+                // postCount = post.length;
+              }
+            }));
+    // return postCount;
+  }
+
+  User createUser(String name, String uid, String photourl, List posts) {
+    return User(
+      name: name,
+      uid: uid,
+      photoUrl: photourl,
+      posts: posts,
+    );
+  }
+
+  Future getUsers() async {
+    List<User> users = [];
+    var result = await userRef.getDocuments();
+    result.documents.forEach((element) {
+      users.add(
+        createUser(
+            element.data['name'],
+            element.data['uid'],
+            'https://www.bbmac.com/wp-content/uploads/2017/04/default-image.jpg',
+            element.data['posts']),
+      );
+    });
+    users.forEach((element) {
+      print(element.name);
+    });
+    return users;
   }
 }

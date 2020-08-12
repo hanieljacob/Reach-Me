@@ -1,11 +1,11 @@
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:google_sign_in/google_sign_in.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
-import 'screens/post.dart';
+
 import './services/database.dart';
 
 //String Uid;
-class AuthProvider{
+class AuthProvider {
   Database db = Database();
   AuthResult res;
   GoogleSignInAccount account;
@@ -13,57 +13,54 @@ class AuthProvider{
   final firestoreInstance = Firestore.instance;
   GoogleSignIn googleSignIn = GoogleSignIn();
 
-  Future<bool> signInWithEmail(String email, String password) async{
+  Future<bool> signInWithEmail(String email, String password) async {
     try {
       AuthResult result = await _auth.signInWithEmailAndPassword(
           email: email, password: password);
       FirebaseUser user = result.user;
-      if(user != null)
+      if (user != null)
         return true;
       else
         return false;
-    }
-    catch(err){
+    } catch (err) {
       return false;
     }
   }
 
-
-  Future<void> logout() async{
+  Future<void> logout() async {
     try {
       await googleSignIn.disconnect();
       await _auth.signOut();
-    }
-    catch(e){
+    } catch (e) {
       print("Error logging out");
     }
   }
 
-  Future<bool> loginWithGoogle() async{
-    try{
+  Future<bool> loginWithGoogle() async {
+    try {
       account = await googleSignIn.signIn();
-      PostPage postPage = PostPage();
+      // PostPage postPage = PostPage();
 
-      if(account == null)
-        return false;
+      if (account == null) return false;
       res = await _auth.signInWithCredential(GoogleAuthProvider.getCredential(
-          idToken: (await account.authentication).idToken, accessToken: (await account.authentication).accessToken));
+          idToken: (await account.authentication).idToken,
+          accessToken: (await account.authentication).accessToken));
       db.createNewUserData(res.user);
 //      firestoreInstance.collection("Users").document(res.user.uid).setData({});
 //      Uid = res.user.uid;
 //      postPage.storeUserId(res.user.uid);
-      if(res.user==null)
+      if (res.user == null)
         return false;
       else
         return true;
-    }catch(e){
+    } catch (e) {
       print(e);
       return false;
     }
   }
 
-  String getUserId(){
-    print("Hello"+res.user.uid);
+  String getUserId() {
+    print("Hello" + res.user.uid);
     return res.user.uid;
   }
 }

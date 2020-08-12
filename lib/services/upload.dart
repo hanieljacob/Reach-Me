@@ -1,27 +1,27 @@
 import 'dart:io';
 import 'package:flutter/material.dart';
-import 'package:cloud_firestore/cloud_firestore.dart';
+
 import 'package:firebase_storage/firebase_storage.dart';
-import 'receive.dart';
 
-
-class Uploader{
+class Uploader {
   int postNumber;
   final File file;
   String uid;
-  String url;
-  Uploader({Key key,this.file,this.uid});
-  final FirebaseStorage _firebaseStorage = FirebaseStorage(storageBucket: 'gs://reach-me-23758.appspot.com');
+  int count;
+  Uploader({Key key, this.file, this.uid, this.count});
+  final FirebaseStorage _firebaseStorage =
+      FirebaseStorage(storageBucket: 'gs://reach-me-23758.appspot.com');
   StorageUploadTask _storageUploadTask;
   String path;
+  var task;
 
-  Future startUpload(int len) async{
+  Future<String> startUpload() async {
 //    firestoreInstance.collection("Users").document(Uid)
-    print(len);
-    String filePath = 'posts/$uid/post$len.png';
+    String filePath = 'posts/$uid/post$count.png';
     _storageUploadTask = _firebaseStorage.ref().child(filePath).putFile(file);
-    url = await _firebaseStorage.ref().child('posts').child(uid).child('post$len.png').getDownloadURL() as String;
-    print(url);
+    task = await _storageUploadTask.onComplete;
+    var url = await task.ref.getDownloadURL();
+    print('Mine' + url);
     return url;
   }
 }
