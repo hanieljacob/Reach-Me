@@ -8,16 +8,33 @@ class Database{
     }
   }
 
-  Future createNewPost(String uid, String text) async{
+  Future createNewPost(String uid, String text, String url) async{
     List post;
+    int length;
 //    await userRef.document(uid).updateData({'posts':FieldValue.arrayUnion([{'text':text}])});
-    userRef.document(uid).get().then((value) => value.data.forEach((key, value) {
+    await userRef.document(uid).get().then((value) => value.data.forEach((key, value) {
       if(key == "posts"){
         post = value;
-        post.add({'text':text});
+        post.add({'text':text,'postURL':url});
         userRef.document(uid).updateData({'posts':post});
-        print(post.length);
+        length = post.length;
       }
     }));
+//    print("DBLen: "+length.toString());
+    return length;
+  }
+
+  Future noOfPost(String uid) async{
+    List post;
+    int length;
+//    await userRef.document(uid).updateData({'posts':FieldValue.arrayUnion([{'text':text}])});
+    await userRef.document(uid).get().then((value) => value.data.forEach((key, value) {
+      if(key == "posts"){
+        post = value;
+        length = post.length;
+      }
+    }));
+//    print("DBLen: "+length.toString());
+    return length;
   }
 }

@@ -143,11 +143,12 @@ class _PostPageState extends State<PostPage> {
             onPressed: () async{
               print("hello "+Uid);
               if(_image!=null) {
-                await db.createNewPost(Uid, textEditingController.text);
+                int len = await db.noOfPost(Uid);
+                print("Postlen: "+len.toString());
                 Uploader uploader = Uploader(file: _image, uid: Uid);
-                uploader.startUpload();
+                String url = await uploader.startUpload(len);
                 print("CDE: " + Uid);
-
+                await db.createNewPost(Uid, textEditingController.text,url);
 //                firestoreInstance.collection("Users").document(Uid).collection(
 //                    "Posts").document("Post 1").setData(
 //                    {'Text': textEditingController.text});
