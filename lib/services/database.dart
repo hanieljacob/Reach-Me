@@ -86,7 +86,7 @@ class Database {
         createUser(
             element.data['name'],
             element.data['uid'],
-            'https://www.bbmac.com/wp-content/uploads/2017/04/default-image.jpg',
+            element.data['userphoto'],
             element.data['posts']),
       );
     });
