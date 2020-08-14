@@ -11,8 +11,38 @@ class Database {
         "posts": [],
         "name": user.displayName,
         'userphoto': user.photoUrl,
+        'followers': [],
+        'following': [],
+        'requests' : [],
       });
     }
+  }
+
+  Future addFollower(String uid1, String uid2) async{
+    List request;
+    userRef
+        .document(uid2)
+        .get()
+        .then((value) => value.data.forEach((key, value) {
+      if (key == "requests") {
+        request = value;
+        request.add(
+          uid1
+        );
+        userRef.document(uid2).updateData({'requests': request});
+        // print(post.length);
+        // postCount = post.length;
+      }
+    }));
+  }
+
+  Future getRequest(String uid) async{
+    List requests = [];
+    await userRef.document(uid).get().then((value) => value.data.forEach((key, value){
+      if(key == 'requests')
+        requests = value;
+    }));
+    return requests;
   }
 
   Future getPostCount(String uid) async {
@@ -69,26 +99,55 @@ class Database {
     // return postCount;
   }
 
-  User createUser(String name, String uid, String photourl, List posts) {
+  User createUser(String name, String uid, String photourl, List posts, List followers, List following, List requests) {
     return User(
       name: name,
       uid: uid,
       photoUrl: photourl,
       posts: posts,
+      followers: followers,
+      following: following,
+      requests: requests,
     );
   }
 
-  Future getUsers() async {
+  Future getRequestedUser(String uid) async{
     List<User> users = [];
     var result = await userRef.getDocuments();
     result.documents.forEach((element) {
-      users.add(
-        createUser(
+        users.add(
+          createUser(
             element.data['name'],
             element.data['uid'],
             element.data['userphoto'],
-            element.data['posts']),
-      );
+            element.data['posts'],
+            element.data['followers'],
+            element.data['following'],
+            element.data['requests'],
+          ),
+        );
+    }
+    );
+  }
+
+  Future getUsers(var userUid) async {
+    List<User> users = [];
+    var result = await userRef.getDocuments();
+    result.documents.forEach((element) {
+      if(userUid != element.documentID) {
+        users.add(
+          createUser(
+              element.data['name'],
+              element.data['uid'],
+              element.data['userphoto'],
+              element.data['posts'],
+              element.data['followers'],
+              element.data['following'],
+              element.data['requests'],
+          ),
+
+        );
+      }
     });
     users.forEach((element) {
       print(element.name);
