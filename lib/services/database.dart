@@ -113,8 +113,21 @@ class Database {
 
   Future getRequestedUser(String uid) async{
     List<User> users = [];
+    List<User> requestedUsers = [];
+    User currentUser;
     var result = await userRef.getDocuments();
     result.documents.forEach((element) {
+        if(element.data['uid']==uid){
+          currentUser = createUser(
+            element.data['name'],
+            element.data['uid'],
+            element.data['userphoto'],
+            element.data['posts'],
+            element.data['followers'],
+            element.data['following'],
+            element.data['requests'],
+          );
+        }
         users.add(
           createUser(
             element.data['name'],
@@ -128,6 +141,14 @@ class Database {
         );
     }
     );
+    currentUser.requests.forEach((element) {
+      users.forEach((value) {
+        if(element == value.uid){
+          requestedUsers.add(value);
+        }
+      });
+    });
+    print(requestedUsers);
   }
 
   Future getUsers(var userUid) async {

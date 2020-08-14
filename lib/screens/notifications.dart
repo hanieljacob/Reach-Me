@@ -21,7 +21,7 @@ class _NotificationsPageState extends State<NotificationsPage> {
   Database db = Database();
   void getUsers(String uid){
 //    db.getUsers(uid).then((value) { setState((){users = value;});});
-
+      db.getRequestedUser(uid);
   }
   @override
   Widget build(BuildContext context) {

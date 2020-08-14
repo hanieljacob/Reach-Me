@@ -30,8 +30,8 @@ class _UsersListState extends State<UsersList> {
         delegate: SliverChildBuilderDelegate(
                 (BuildContext context, int index) {
 
-                  if(widget.searchedName == ''){return null;}
-              return boolList[index]? Padding(
+                  if(widget.searchedName == ''){return Container();}
+              return  boolList[index]? Padding(
                 padding: EdgeInsets.symmetric(
                   vertical: 10,
                   horizontal: 5,
@@ -56,7 +56,7 @@ class _UsersListState extends State<UsersList> {
                     },
                   ),
                   ),
-              ): null;
+              ): SizedBox.shrink();
             }, childCount: widget.users.length),
       )
     ]);

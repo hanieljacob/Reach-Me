@@ -60,9 +60,7 @@ class _SettingsPageState extends State<SettingsPage> {
                       _selectedIndex = index;
                     });
                   }),
-              body: postsUrl.length == 0
-                  ? Loading()
-                  : CustomScrollView(
+              body: CustomScrollView(
                       slivers: <Widget>[
                         SliverAppBar(
                           title: Text('Profile'),
@@ -86,7 +84,9 @@ class _SettingsPageState extends State<SettingsPage> {
                         SliverList(
                           delegate: SliverChildBuilderDelegate(
                               (BuildContext context, int index) {
-                            return Padding(
+                            return postsUrl.length == 0
+                                ? SizedBox.shrink()
+                                : Padding(
                               padding: EdgeInsets.symmetric(
                                 vertical: 30,
                                 horizontal: 10,
