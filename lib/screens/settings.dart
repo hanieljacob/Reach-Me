@@ -72,7 +72,7 @@ class _SettingsPageState extends State<SettingsPage> {
                   : CustomScrollView(
                       slivers: <Widget>[
                         ProfileSliverAppBar(
-                          user: user,
+                          user: userData,
                           posts:
                               userData == null ? 0 : userData.posts.length,
                           followers:

@@ -189,6 +189,32 @@ class Database {
     return reqUsers;
   }
 
+  Future getFollowers(List followers) async {
+    List<User> users = [];
+    List<User> follower = [];
+    var result = await userRef.getDocuments();
+    result.documents.forEach((element) {
+      users.add(
+        createUser(
+          element.data['name'],
+          element.data['uid'],
+          element.data['userphoto'],
+          element.data['posts'],
+          element.data['followers'],
+          element.data['following'],
+          element.data['requests'],
+          element.data['requested'],
+        ),
+      );
+    });
+    users.forEach((element) {
+      if (followers.contains(element.uid)) {
+        follower.add(element);
+      }
+    });
+    return follower;
+  }
+
   Future getRequest(String uid) async {
     List requests = [];
     await userRef
@@ -218,4 +244,27 @@ class Database {
       'requested': FieldValue.arrayRemove([curUser])
     });
   }
+
+  Future disconnect(String curUser, String reqUser) async{
+
+    userRef.document(curUser).updateData({
+      'followers': FieldValue.arrayRemove([reqUser])
+    });
+
+    userRef.document(reqUser).updateData({
+      'following': FieldValue.arrayRemove([curUser])
+    });
+  }
+
+  Future unfollow(String curUser, String reqUser) async{
+
+    userRef.document(curUser).updateData({
+    'following': FieldValue.arrayRemove([reqUser])
+    });
+
+    userRef.document(reqUser).updateData({
+    'followers': FieldValue.arrayRemove([curUser])
+    });
+  }
+
 }
