@@ -1,8 +1,10 @@
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
-import 'package:reach_me/components/loading.dart';
-import 'package:reach_me/services/database.dart';
+import '../components/loading.dart';
+import '../models/User.dart';
+import '../components/profileSliverAppBar.dart';
+import '../services/database.dart';
 import 'home.dart';
 import 'search.dart';
 import 'post.dart';
@@ -18,6 +20,7 @@ class _SettingsPageState extends State<SettingsPage> {
   int _selectedIndex = 4;
   List postsUrl = [];
   List text = [];
+  User userData;
   String username;
   String uid;
   Database db = Database();
@@ -26,21 +29,25 @@ class _SettingsPageState extends State<SettingsPage> {
   void getposts(String uid) {
     getPostUrl(uid).then(
       (value) => setState(
-        () => {
-          value.forEach(
+        () {
+          userData = value;
+          // print(userData);
+          userData.posts.forEach(
             (element) {
               postsUrl.add(element['photoUrl']);
               text.add(element['text']);
             },
-          )
+          );
         },
       ),
     );
   }
 
   Future getPostUrl(String uid) async {
-    return await db.getPosts(uid);
+    return await db.getUser(uid);
   }
+
+
 
   @override
   Widget build(BuildContext context) {
@@ -60,45 +67,44 @@ class _SettingsPageState extends State<SettingsPage> {
                       _selectedIndex = index;
                     });
                   }),
-              body: CustomScrollView(
+              body: userData == null
+                  ? Loading()
+                  : CustomScrollView(
                       slivers: <Widget>[
-                        SliverAppBar(
-                          title: Text('Profile'),
-                          backgroundColor: Colors.blue,
-                          expandedHeight: 200.0,
-                          flexibleSpace: FlexibleSpaceBar(
-                            title: Text('Hello, ' + user.displayName),
-                            centerTitle: true,
-                            background: CircleAvatar(
-                              radius: 30,
-                              child: ClipOval(
-                                child: Image.network(
-                                  user.photoUrl,
-                                ),
-                              ),
-                              // backgroundImage: NetworkImage(user.photoUrl),
-                              backgroundColor: Colors.transparent,
-                            ),
-                          ),
+                        ProfileSliverAppBar(
+                          user: user,
+                          posts:
+                              userData == null ? 0 : userData.posts.length,
+                          followers:
+                              userData == null ? 0 : userData.followers.length,
+                          following:
+                              userData == null ? 0 : userData.following.length,
                         ),
                         SliverList(
                           delegate: SliverChildBuilderDelegate(
                               (BuildContext context, int index) {
                             return postsUrl.length == 0
-                                ? SizedBox.shrink()
+                                ? Center(
+                                    child: Padding(
+                                    padding: const EdgeInsets.only(top: 40.0),
+                                    child: Text(
+                                        'Oops! Looks like you havent posted anything yet.'),
+                                  ))
                                 : Padding(
-                              padding: EdgeInsets.symmetric(
-                                vertical: 30,
-                                horizontal: 10,
-                              ),
-                              child: Column(
-                                children: [
-                                  Image.network(postsUrl[index]),
-                                  Text(text[index]),
-                                ],
-                              ),
-                            );
-                          }, childCount: postsUrl.length),
+                                    padding: EdgeInsets.symmetric(
+                                      vertical: 30,
+                                      horizontal: 10,
+                                    ),
+                                    child: Column(
+                                      children: [
+                                        Image.network(postsUrl[index]),
+                                        Text(text[index]),
+                                      ],
+                                    ),
+                                  );
+                          },
+                              childCount:
+                                  postsUrl.length == 0 ? 1 : postsUrl.length),
                         )
                       ],
                     ),

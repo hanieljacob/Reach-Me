@@ -15,61 +15,77 @@ class NotificationsPage extends StatefulWidget {
 }
 
 class _NotificationsPageState extends State<NotificationsPage> {
-  int _selectedIndex=3;
+  int _selectedIndex = 3;
   bool firsttime = true;
   List<User> users = [];
+  List<User> reqUsers = [];
   Database db = Database();
-  void getUsers(String uid){
+  void getRequestedUsers(String uid) {
 //    db.getUsers(uid).then((value) { setState((){users = value;});});
-      db.getRequestedUser(uid);
+    db.getRequest(uid).then((value) {
+      db.getRequestedUser(value).then((value) => setState(() {
+            reqUsers = value;
+          }));
+    });
   }
+
   @override
   Widget build(BuildContext context) {
     var user = Provider.of<FirebaseUser>(context);
-    if(firsttime) {
-      getUsers(user.uid);
+    if (firsttime) {
+      getRequestedUsers(user.uid);
       firsttime = false;
     }
-    return _selectedIndex == 3 ? Scaffold(
-      bottomNavigationBar: BottomNavBar(
-          selectedIndex: 3, onItemTapped: (index) {
-        setState(() {
-          _selectedIndex = index;
-        });
-      }),
-      body: CustomScrollView(slivers: [
-        SliverList(
-          delegate: SliverChildBuilderDelegate(
-                  (BuildContext context, int index) {
-                return Padding(
-                  padding: EdgeInsets.symmetric(
-                    vertical: 10,
-                    horizontal: 5,
-                  ),
-                  child: ListTile(
-                    onTap: (){
-
-                    },
-                    leading: CircleAvatar(
-                      backgroundImage:
-                      NetworkImage(users[index].photoUrl),
-                    ),
-                    title: Text(users[index].name),
-                    trailing: FlatButton(
-                      color: Colors.blue,
-                      child: Text(
-                          'Accept'
-                      ),
-                      onPressed: (){
-
-//                    print(widget.users[index].uid);
-                      },
-                    ),
-                  ),
-                );
-              }, childCount: users.length),
-        )
-      ])
-    ) : _selectedIndex == 0? HomePage() : _selectedIndex == 1? SearchPage() : _selectedIndex == 2? PostPage() : SettingsPage();
+    return _selectedIndex == 3
+        ? SafeArea(
+            child: Scaffold(
+                bottomNavigationBar: BottomNavBar(
+                    selectedIndex: 3,
+                    onItemTapped: (index) {
+                      setState(() {
+                        _selectedIndex = index;
+                      });
+                    }),
+                body: CustomScrollView(slivers: [
+                  SliverList(
+                    delegate: SliverChildBuilderDelegate(
+                        (BuildContext context, int index) {
+                      return Padding(
+                        padding: EdgeInsets.symmetric(
+                          vertical: 10,
+                          horizontal: 5,
+                        ),
+                        child: ListTile(
+                          onTap: () {},
+                          leading: CircleAvatar(
+                            backgroundImage:
+                                NetworkImage(reqUsers[index].photoUrl),
+                          ),
+                          title: Text(reqUsers[index].name),
+                          trailing: FlatButton(
+                            textColor: Colors.white,
+                            color: Colors.blue,
+                            child: Text('Accept'),
+                            onPressed: () {
+                              db.addFollowerAndFollowing(
+                                user.uid,
+                                reqUsers[index].uid,
+                              );
+                              setState(() {
+                                firsttime = true;
+                              });
+                            },
+                          ),
+                        ),
+                      );
+                    }, childCount: reqUsers.length),
+                  )
+                ])),
+          )
+        : _selectedIndex == 0
+            ? HomePage()
+            : _selectedIndex == 1
+                ? SearchPage()
+                : _selectedIndex == 2 ? PostPage() : SettingsPage();
   }
 }

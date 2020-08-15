@@ -6,5 +6,15 @@ class User {
   List followers;
   List following;
   List requests;
-  User({this.name, this.photoUrl, this.posts, this.uid, this.followers, this.following, this.requests});
+  List requested;
+  User({
+    this.name,
+    this.photoUrl,
+    this.posts,
+    this.uid,
+    this.followers,
+    this.following,
+    this.requests,
+    this.requested,
+  });
 }

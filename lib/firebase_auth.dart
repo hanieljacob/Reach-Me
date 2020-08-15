@@ -29,10 +29,11 @@ class AuthProvider {
 
   Future<void> logout() async {
     try {
-      await googleSignIn.disconnect();
-      await _auth.signOut();
+      await googleSignIn.disconnect().whenComplete(() async {
+        await _auth.signOut();
+      });
     } catch (e) {
-      print("Error logging out");
+      print(e);
     }
   }
 

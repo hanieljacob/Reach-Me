@@ -19,18 +19,25 @@ class _SearchPageState extends State<SearchPage> {
   int _selectedIndex = 1;
   String searchedName = '';
   TextEditingController _controller = new TextEditingController();
-  FocusNode _textFocus = new FocusNode();
+  // FocusNode _textFocus = new FocusNode();
   Database db = Database();
+  User curUser;
   List<User> users = [];
-  List<String> userName = [];
+  List userName = [];
   bool firstime = true;
   void getUsers(userUid) {
+    db.getUser(userUid).then(
+          (value) => setState(() {
+            curUser = value;
+          }),
+        );
     db.getUsers(userUid).then(
           (value) => setState(() {
             users = value;
             users.forEach((element) {
-              userName.add(element.name);
+              userName.add(element.name.toString());
             });
+            // print(users);
           }),
         );
   }
@@ -47,16 +54,27 @@ class _SearchPageState extends State<SearchPage> {
             child: Scaffold(
               appBar: AppBar(
                 title: TextFormField(
+                  decoration: InputDecoration(
+                    border: InputBorder.none,
+                    hintText: "Search User...",
+                    hintStyle: TextStyle(
+                      color: Colors.white,
+                    ),
+                  ),
+                  cursorColor: Colors.white,
+                  style: TextStyle(
+                    color: Colors.white,
+                  ),
+                  autofocus: false,
                   controller: _controller,
-                  onChanged: (value){
+                  onChanged: (value) {
+                    print(value);
                     setState(() {
                       searchedName = value;
                     });
                   },
                 ),
-                leading: Icon(
-                  Icons.search
-                ),
+                leading: Icon(Icons.search),
                 backgroundColor: Colors.blue,
               ),
               bottomNavigationBar: BottomNavBar(
@@ -70,7 +88,18 @@ class _SearchPageState extends State<SearchPage> {
                   ? Center(
                       child: Text('Users'),
                     )
-                  : UsersList(users: users,searchedName:searchedName,userNames: userName,uid: user.uid,)
+                  : UsersList(
+                      rebuild: () {
+                        setState(() {
+                          firstime = true;
+                        });
+                      },
+                      users: users,
+                      searchedName: searchedName,
+                      userNames: userName,
+                      uid: user.uid,
+                      curUser: curUser,
+                    ),
             ),
           )
         : _selectedIndex == 0
