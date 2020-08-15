@@ -16,9 +16,18 @@ class _FollowingPageState extends State<FollowingPage> {
   List<User> followers = [];
   Database db = Database();
   bool firstTime = true;
+  List<bool> boolList = [];
+
+  void unfollow(){
+    followers.forEach((element) {
+      boolList.add(true);
+    });
+  }
+
   void getFollowers(List follower) {
     db.getFollowers(follower).then((value) => setState((){
       followers = value;
+      unfollow();
     }));
   }
   @override
@@ -29,7 +38,7 @@ class _FollowingPageState extends State<FollowingPage> {
     }
     return Scaffold(
       body:  ListView.builder(itemCount: widget.followers.length,itemBuilder: (BuildContext context,int index){
-        return followers.length==0?SizedBox.shrink():ListTile(
+        return followers.length==0?SizedBox.shrink():boolList[index]?ListTile(
           onTap: () {},
           leading: CircleAvatar(
             backgroundImage:
@@ -41,13 +50,13 @@ class _FollowingPageState extends State<FollowingPage> {
             color: Colors.blue,
             child: Text('Unfollow'),
             onPressed: () {
-              db.disconnect(widget.uid, followers[index].uid);
+              db.unfollow(widget.uid, followers[index].uid);
               setState(() {
-                firstTime = true;
+                boolList[index] = false;
               });
             },
           ),
-        );
+        ):SizedBox.shrink();
       }),
     );
   }
