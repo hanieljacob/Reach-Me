@@ -2,14 +2,15 @@ import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/cupertino.dart';
 import 'package:reach_me/firebase_auth.dart';
 import 'package:flutter/material.dart';
+import 'package:reach_me/models/Post.dart';
 import 'search.dart';
 import 'post.dart';
 import 'notifications.dart';
-import 'settings.dart';
+import 'account.dart';
 import '../components/bottom_navbar.dart';
-
 import '../services/receive.dart';
 import 'package:provider/provider.dart';
+import '../services/database.dart';
 
 class HomePage extends StatefulWidget {
   @override
@@ -17,14 +18,19 @@ class HomePage extends StatefulWidget {
 }
 
 class _HomePageState extends State<HomePage> {
-  String url;
+  List<Post> post = [];
   int _selectedIndex = 0;
   String uid;
+  bool firstTime = true;
+  Database db = Database();
 
-  void reload(String uid) {
-    refresh(uid).then((val) => setState(() {
-          url = val;
-        }));
+  void reload() {
+//    refresh(uid).then((val) => setState(() {
+//          url = val;
+//        }));
+    db.getPostData().then((value) => setState((){
+      post = value;
+    }));
   }
 
   Future<String> refresh(String uid) async {
@@ -35,6 +41,10 @@ class _HomePageState extends State<HomePage> {
 
   @override
   Widget build(BuildContext context) {
+    if(firstTime){
+      reload();
+      firstTime = false;
+    }
     var user = Provider.of<FirebaseUser>(context);
     return _selectedIndex == 0
         ? Scaffold(
@@ -64,44 +74,35 @@ class _HomePageState extends State<HomePage> {
                 ),
               ],
             ),
-            body: SingleChildScrollView(
-              child: Column(
-                crossAxisAlignment: CrossAxisAlignment.start,
-                children: <Widget>[
-                  SizedBox(
-                    height: 250,
-                  ),
-                  Center(
-                    child: Text(
-                      "",
-                      style:
-                          TextStyle(fontSize: 18, fontWeight: FontWeight.w400),
-                    ),
-                  ),
-                  url != null
-                      ? Padding(
-                          padding: EdgeInsets.symmetric(vertical: 10),
-                          child: Image.network(url))
-                      : SizedBox(height: 2),
-                  Center(
-                    child: RaisedButton(
-                      child: Text('Refresh'),
-                      onPressed: () {
-                        uid = user.uid;
-                        reload(uid);
+            body: CustomScrollView(
+              slivers: <Widget>[
+                SliverList(
+                  delegate: SliverChildBuilderDelegate(
+                          (BuildContext context, int index) {
+                        return post.length == 0
+                            ? Center(
+                            child: Padding(
+                              padding: const EdgeInsets.only(top: 40.0),
+                              child: Text(
+                                  'Oops! Looks like you havent posted anything yet.'),
+                            ))
+                            : Padding(
+                          padding: EdgeInsets.symmetric(
+                            vertical: 30,
+                            horizontal: 10,
+                          ),
+                          child: Column(
+                            children: [
+                              Image.network(post[index].photoUrl),
+                              Text(post[index].text),
+                            ],
+                          ),
+                        );
                       },
-                    ),
-                  ),
-                  Center(
-                    child: RaisedButton(
-                      child: Text('Log out'),
-                      onPressed: () {
-                        AuthProvider().logout();
-                      },
-                    ),
-                  ),
-                ],
-              ),
+                      childCount:
+                      post.length == 0 ? 1 : post.length),
+                )
+              ],
             ),
           )
         : _selectedIndex == 1

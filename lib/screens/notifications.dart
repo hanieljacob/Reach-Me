@@ -5,7 +5,7 @@ import 'package:reach_me/models/User.dart';
 import 'home.dart';
 import 'search.dart';
 import 'post.dart';
-import 'settings.dart';
+import 'account.dart';
 import '../components/bottom_navbar.dart';
 import '../services/database.dart';
 

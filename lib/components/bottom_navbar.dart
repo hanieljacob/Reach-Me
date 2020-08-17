@@ -44,7 +44,7 @@ class BottomNavBar extends StatelessWidget {
         BottomNavigationBarItem(
           icon: Padding(
             padding: const EdgeInsets.all(8.0),
-            child: Icon(Icons.settings),
+            child: Icon(Icons.account_circle),
           ),
           title: SizedBox.shrink(),
         ),

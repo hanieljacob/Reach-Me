@@ -1,5 +1,9 @@
+
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:firebase_auth/firebase_auth.dart';
+import 'package:flutter/material.dart';
+import 'package:provider/provider.dart';
+import 'package:reach_me/models/Post.dart';
 import '../models/User.dart';
 
 class Database {
@@ -87,6 +91,31 @@ class Database {
     return user;
   }
 
+  Post createNewPostData(String text,String photoUrl,List comments,List likes,Timestamp postTime){
+    return Post(text: text, photoUrl: photoUrl, comments: comments,likes: likes, postTime: postTime);
+  }
+
+  Future getPostData() async{
+    List<Post> posts = [];
+    List rawPost = [];
+    var result = await userRef.getDocuments();
+    result.documents.forEach((element) {
+      rawPost.add(element.data['posts']);
+
+    });
+    rawPost.forEach((element) {
+      List post = element;
+      post.forEach((element) {
+        posts.add(
+            createNewPostData(element['text'],element['photoUrl'], element['comments'], element['likes'], element['postTime'])
+        );
+      });
+    });
+    print(posts);
+    return posts;
+//    print(rawPost);
+  }
+
   Future createNewPost(String uid, String text, String url) async {
     List post;
     // int postCount;
@@ -100,6 +129,9 @@ class Database {
                 post.add({
                   'text': text,
                   'photoUrl': url,
+                  'comments': [],
+                  'likes': [],
+                  'postTime': Timestamp.now(),
                 });
                 userRef.document(uid).updateData({'posts': post});
                 // print(post.length);

@@ -4,11 +4,12 @@ import 'package:provider/provider.dart';
 import 'home.dart';
 import 'post.dart';
 import 'notifications.dart';
-import 'settings.dart';
+import 'account.dart';
 import '../components/bottom_navbar.dart';
 import '../services/database.dart';
 import '../models/User.dart';
 import '../components/sliver_list.dart';
+
 
 class SearchPage extends StatefulWidget {
   @override
@@ -50,6 +51,7 @@ class _SearchPageState extends State<SearchPage> {
       firstime = false;
     }
     return _selectedIndex == 1
+
         ? SafeArea(
             child: Scaffold(
               appBar: AppBar(

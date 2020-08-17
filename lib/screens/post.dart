@@ -5,7 +5,7 @@ import 'home.dart';
 import 'search.dart';
 import 'dart:io';
 import 'notifications.dart';
-import 'settings.dart';
+import 'account.dart';
 import '../components/bottom_navbar.dart';
 import 'package:image_picker/image_picker.dart';
 import 'package:image_cropper/image_cropper.dart';
@@ -107,7 +107,7 @@ class _PostPageState extends State<PostPage> {
                   ),
                   Center(
                     child: _image == null
-                        ? Text("Image")
+                        ? SizedBox.shrink()
                         : Image.file(
                             _image,
                             height: 200,
