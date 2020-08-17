@@ -95,14 +95,22 @@ class Database {
     return Post(text: text, photoUrl: photoUrl, comments: comments,likes: likes, postTime: postTime);
   }
 
-  Future getPostData() async{
+  Future getPostData(String uid) async{
     List<Post> posts = [];
     List rawPost = [];
-    var result = await userRef.getDocuments();
-    result.documents.forEach((element) {
-      rawPost.add(element.data['posts']);
+    List following = [];
 
+    var result = await userRef.getDocuments();
+    await userRef.document(uid).get().then((value){ following = value.data['following'];
+//    print(following);
+    result.documents.forEach((element) {
+//      print(following.contains(element.data['uid']));
+      if(following.contains(element.data['uid']) || element.data['uid'] == uid)
+        rawPost.add(element.data['posts']);
     });
+    });
+    print(rawPost);
+
     rawPost.forEach((element) {
       List post = element;
       post.forEach((element) {
@@ -110,6 +118,11 @@ class Database {
             createNewPostData(element['text'],element['photoUrl'], element['comments'], element['likes'], element['postTime'])
         );
       });
+    });
+    posts.sort((a,b){
+        var date1 = new DateTime.fromMillisecondsSinceEpoch(a.postTime.millisecondsSinceEpoch * 1000);
+        var date2 = new DateTime.fromMillisecondsSinceEpoch(b.postTime.millisecondsSinceEpoch * 1000);
+        return date2.compareTo(date1);
     });
     print(posts);
     return posts;
@@ -131,7 +144,7 @@ class Database {
                   'photoUrl': url,
                   'comments': [],
                   'likes': [],
-                  'postTime': Timestamp.now(),
+                  'postTime': DateTime.now(),
                 });
                 userRef.document(uid).updateData({'posts': post});
                 // print(post.length);

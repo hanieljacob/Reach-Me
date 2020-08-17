@@ -87,9 +87,7 @@ class _SearchPageState extends State<SearchPage> {
                     });
                   }),
               body: users.length == 0
-                  ? Center(
-                      child: Text('Users'),
-                    )
+                  ? SizedBox.shrink()
                   : UsersList(
                       rebuild: () {
                         setState(() {

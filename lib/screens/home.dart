@@ -11,6 +11,7 @@ import '../components/bottom_navbar.dart';
 import '../services/receive.dart';
 import 'package:provider/provider.dart';
 import '../services/database.dart';
+import '../components/loading.dart';
 
 class HomePage extends StatefulWidget {
   @override
@@ -24,11 +25,11 @@ class _HomePageState extends State<HomePage> {
   bool firstTime = true;
   Database db = Database();
 
-  void reload() {
+  void reload(String uid) {
 //    refresh(uid).then((val) => setState(() {
 //          url = val;
 //        }));
-    db.getPostData().then((value) => setState((){
+    db.getPostData(uid).then((value) => setState((){
       post = value;
     }));
   }
@@ -41,11 +42,11 @@ class _HomePageState extends State<HomePage> {
 
   @override
   Widget build(BuildContext context) {
+    var user = Provider.of<FirebaseUser>(context);
     if(firstTime){
-      reload();
+      reload(user.uid);
       firstTime = false;
     }
-    var user = Provider.of<FirebaseUser>(context);
     return _selectedIndex == 0
         ? Scaffold(
             bottomNavigationBar: BottomNavBar(
@@ -83,9 +84,9 @@ class _HomePageState extends State<HomePage> {
                             ? Center(
                             child: Padding(
                               padding: const EdgeInsets.only(top: 40.0),
-                              child: Text(
-                                  'Oops! Looks like you havent posted anything yet.'),
-                            ))
+                              child: Loading()
+                              )
+                            )
                             : Padding(
                           padding: EdgeInsets.symmetric(
                             vertical: 30,
