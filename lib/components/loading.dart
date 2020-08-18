@@ -12,7 +12,7 @@ class Loading extends StatelessWidget {
         mainAxisAlignment: MainAxisAlignment.center,
         children: <Widget>[
           CircularProgressIndicator(
-            backgroundColor: Colors.white,
+            backgroundColor: Colors.transparent,
           ),
           SizedBox(
             height: 10,

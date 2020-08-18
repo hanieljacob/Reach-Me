@@ -91,40 +91,54 @@ class Database {
     return user;
   }
 
-  Post createNewPostData(String text,String photoUrl,List comments,List likes,Timestamp postTime){
-    return Post(text: text, photoUrl: photoUrl, comments: comments,likes: likes, postTime: postTime);
+  Post createNewPostData(String text,String photoUrl,List comments,List likes,Timestamp postTime,String uid,String userphoto,String username){
+    return Post(text: text, photoUrl: photoUrl, comments: comments,likes: likes, postTime: postTime,uid:uid,username: username,userphoto: userphoto);
   }
 
   Future getPostData(String uid) async{
     List<Post> posts = [];
     List rawPost = [];
     List following = [];
+    List userData = [];
 
     var result = await userRef.getDocuments();
     await userRef.document(uid).get().then((value){ following = value.data['following'];
 //    print(following);
     result.documents.forEach((element) {
 //      print(following.contains(element.data['uid']));
-      if(following.contains(element.data['uid']) || element.data['uid'] == uid)
+      if(following.contains(element.data['uid']) || element.data['uid'] == uid){
+        userData.add({'username':element.data['name'],'uid':element.data['uid'],'userphoto':element.data['userphoto']});
         rawPost.add(element.data['posts']);
+      }
     });
     });
     print(rawPost);
 
     rawPost.forEach((element) {
       List post = element;
-      post.forEach((element) {
+//      post.forEach((element) {
+//        posts.add(
+//            createNewPostData(element['text'],element['photoUrl'], element['comments'], element['likes'], element['postTime'])
+//        );
+//      });
+      for(int index=0;index<post.length;index++){
         posts.add(
-            createNewPostData(element['text'],element['photoUrl'], element['comments'], element['likes'], element['postTime'])
+            createNewPostData(post[index]['text'],post[index]['photoUrl'],post[index]['comments'],post[index]['likes'],post[index]['postTime'],userData[index]['uid'],userData[index]['userphoto'],userData[index]['username'])
         );
-      });
+      }
+    });
+    posts.forEach((element) {
+      print(element.username+" "+element.text);
     });
     posts.sort((a,b){
         var date1 = new DateTime.fromMillisecondsSinceEpoch(a.postTime.millisecondsSinceEpoch * 1000);
         var date2 = new DateTime.fromMillisecondsSinceEpoch(b.postTime.millisecondsSinceEpoch * 1000);
         return date2.compareTo(date1);
     });
-    print(posts);
+//    print(posts[0].username);
+//    posts.forEach((element) {
+//      print(element.username+" "+element.text);
+//   });
     return posts;
 //    print(rawPost);
   }

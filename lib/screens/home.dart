@@ -1,5 +1,6 @@
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/cupertino.dart';
+import 'package:reach_me/components/PostCard.dart';
 import 'package:reach_me/firebase_auth.dart';
 import 'package:flutter/material.dart';
 import 'package:reach_me/models/Post.dart';
@@ -32,6 +33,7 @@ class _HomePageState extends State<HomePage> {
     db.getPostData(uid).then((value) => setState((){
       post = value;
     }));
+
   }
 
   Future<String> refresh(String uid) async {
@@ -49,6 +51,7 @@ class _HomePageState extends State<HomePage> {
     }
     return _selectedIndex == 0
         ? Scaffold(
+            backgroundColor: Colors.grey,
             bottomNavigationBar: BottomNavBar(
                 selectedIndex: 0,
                 onItemTapped: (index) {
@@ -67,7 +70,9 @@ class _HomePageState extends State<HomePage> {
               title: Center(child: Text("ReachMe")),
               actions: <Widget>[
                 IconButton(
-                  onPressed: () {},
+                  onPressed: () {
+                    AuthProvider().logout();
+                  },
                   icon: Icon(
                     Icons.send,
                     color: Colors.white,
@@ -87,18 +92,9 @@ class _HomePageState extends State<HomePage> {
                               child: Loading()
                               )
                             )
-                            : Padding(
-                          padding: EdgeInsets.symmetric(
-                            vertical: 30,
-                            horizontal: 10,
-                          ),
-                          child: Column(
-                            children: [
-                              Image.network(post[index].photoUrl),
-                              Text(post[index].text),
-                            ],
-                          ),
-                        );
+                            : PostCard(
+                              post: post[index],
+                            );
                       },
                       childCount:
                       post.length == 0 ? 1 : post.length),
