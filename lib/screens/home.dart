@@ -25,15 +25,15 @@ class _HomePageState extends State<HomePage> {
   String uid;
   bool firstTime = true;
   Database db = Database();
+  AuthProvider _authProvider = AuthProvider();
 
   void reload(String uid) {
 //    refresh(uid).then((val) => setState(() {
 //          url = val;
 //        }));
-    db.getPostData(uid).then((value) => setState((){
-      post = value;
-    }));
-
+    db.getPostData(uid).then((value) => setState(() {
+          post = value;
+        }));
   }
 
   Future<String> refresh(String uid) async {
@@ -45,13 +45,13 @@ class _HomePageState extends State<HomePage> {
   @override
   Widget build(BuildContext context) {
     var user = Provider.of<FirebaseUser>(context);
-    if(firstTime){
+    if (firstTime) {
       reload(user.uid);
       firstTime = false;
     }
     return _selectedIndex == 0
         ? Scaffold(
-            backgroundColor: Colors.grey,
+            backgroundColor: Colors.grey[100],
             bottomNavigationBar: BottomNavBar(
                 selectedIndex: 0,
                 onItemTapped: (index) {
@@ -71,7 +71,7 @@ class _HomePageState extends State<HomePage> {
               actions: <Widget>[
                 IconButton(
                   onPressed: () {
-                    AuthProvider().logout();
+                    _authProvider.logout();
                   },
                   icon: Icon(
                     Icons.send,
@@ -84,20 +84,16 @@ class _HomePageState extends State<HomePage> {
               slivers: <Widget>[
                 SliverList(
                   delegate: SliverChildBuilderDelegate(
-                          (BuildContext context, int index) {
-                        return post.length == 0
-                            ? Center(
+                      (BuildContext context, int index) {
+                    return post.length == 0
+                        ? Center(
                             child: Padding(
-                              padding: const EdgeInsets.only(top: 40.0),
-                              child: Loading()
-                              )
-                            )
-                            : PostCard(
-                              post: post[index],
-                            );
-                      },
-                      childCount:
-                      post.length == 0 ? 1 : post.length),
+                                padding: const EdgeInsets.only(top: 40.0),
+                                child: Loading()))
+                        : PostCard(
+                            post: post[index],
+                          );
+                  }, childCount: post.length == 0 ? 1 : post.length),
                 )
               ],
             ),

@@ -1,6 +1,8 @@
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
+import 'package:reach_me/components/PostCard.dart';
+import 'package:reach_me/models/Post.dart';
 import '../components/loading.dart';
 import '../models/User.dart';
 import '../components/profileSliverAppBar.dart';
@@ -26,6 +28,8 @@ class _SettingsPageState extends State<SettingsPage> {
   Database db = Database();
   bool firstime = true;
 
+  List<Post> post = [];
+
   void getposts(String uid) {
     getPostUrl(uid).then(
       (value) => setState(
@@ -41,6 +45,7 @@ class _SettingsPageState extends State<SettingsPage> {
         },
       ),
     );
+    db.userPostData(uid).then((value) => setState((){post=value;}));
   }
 
   Future getPostUrl(String uid) async {
@@ -83,28 +88,19 @@ class _SettingsPageState extends State<SettingsPage> {
                         SliverList(
                           delegate: SliverChildBuilderDelegate(
                               (BuildContext context, int index) {
-                            return postsUrl.length == 0
+                            return post.length == 0
                                 ? Center(
                                     child: Padding(
                                     padding: const EdgeInsets.only(top: 40.0),
                                     child: Text(
                                         'Oops! Looks like you havent posted anything yet.'),
                                   ))
-                                : Padding(
-                                    padding: EdgeInsets.symmetric(
-                                      vertical: 30,
-                                      horizontal: 10,
-                                    ),
-                                    child: Column(
-                                      children: [
-                                        Image.network(postsUrl[index]),
-                                        Text(text[index]),
-                                      ],
-                                    ),
-                                  );
+                                : PostCard(
+                              post: post[index],
+                            );
                           },
                               childCount:
-                                  postsUrl.length == 0 ? 1 : postsUrl.length),
+                                  post.length == 0 ? 1 : post.length),
                         )
                       ],
                     ),

@@ -1,4 +1,3 @@
-
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
@@ -91,49 +90,78 @@ class Database {
     return user;
   }
 
-  Post createNewPostData(String text,String photoUrl,List comments,List likes,Timestamp postTime,String uid,String userphoto,String username){
-    return Post(text: text, photoUrl: photoUrl, comments: comments,likes: likes, postTime: postTime,uid:uid,username: username,userphoto: userphoto);
+  Post createNewPostData(
+      String text,
+      String photoUrl,
+      List comments,
+      List likes,
+      Timestamp postTime,
+      String uid,
+      String userphoto,
+      String username) {
+    return Post(
+        text: text,
+        photoUrl: photoUrl,
+        comments: comments,
+        likes: likes,
+        postTime: postTime,
+        uid: uid,
+        username: username,
+        userphoto: userphoto);
   }
 
-  Future getPostData(String uid) async{
+  Future getPostData(String uid) async {
     List<Post> posts = [];
     List rawPost = [];
     List following = [];
     List userData = [];
+    int ind = 0;
 
     var result = await userRef.getDocuments();
-    await userRef.document(uid).get().then((value){ following = value.data['following'];
-//    print(following);
-    result.documents.forEach((element) {
-//      print(following.contains(element.data['uid']));
-      if(following.contains(element.data['uid']) || element.data['uid'] == uid){
-        userData.add({'username':element.data['name'],'uid':element.data['uid'],'userphoto':element.data['userphoto']});
-        rawPost.add(element.data['posts']);
-      }
+    await userRef.document(uid).get().then((value) {
+      following = value.data['following'];
+
+      result.documents.forEach((element) {
+        if (following.contains(element.data['uid']) ||
+            element.data['uid'] == uid) {
+          for (int i = 0; i < element.data['posts'].length; i++)
+            userData.add({
+              'username': element.data['name'],
+              'uid': element.data['uid'],
+              'userphoto': element.data['userphoto'],
+            });
+          rawPost.add(element.data['posts']);
+        }
+      });
     });
-    });
-    print(rawPost);
+    print(userData);
 
     rawPost.forEach((element) {
       List post = element;
-//      post.forEach((element) {
-//        posts.add(
-//            createNewPostData(element['text'],element['photoUrl'], element['comments'], element['likes'], element['postTime'])
-//        );
-//      });
-      for(int index=0;index<post.length;index++){
+      post.forEach((element) {
         posts.add(
-            createNewPostData(post[index]['text'],post[index]['photoUrl'],post[index]['comments'],post[index]['likes'],post[index]['postTime'],userData[index]['uid'],userData[index]['userphoto'],userData[index]['username'])
+          createNewPostData(
+              element['text'],
+              element['photoUrl'],
+              element['comments'],
+              element['likes'],
+              element['postTime'],
+              userData[ind]['uid'],
+              userData[ind]['userphoto'],
+              userData[ind]['username']),
         );
-      }
+        ind++;
+      });
     });
     posts.forEach((element) {
-      print(element.username+" "+element.text);
+      print(element.username + " " + element.text);
     });
-    posts.sort((a,b){
-        var date1 = new DateTime.fromMillisecondsSinceEpoch(a.postTime.millisecondsSinceEpoch * 1000);
-        var date2 = new DateTime.fromMillisecondsSinceEpoch(b.postTime.millisecondsSinceEpoch * 1000);
-        return date2.compareTo(date1);
+    posts.sort((a, b) {
+      var date1 = new DateTime.fromMillisecondsSinceEpoch(
+          a.postTime.millisecondsSinceEpoch * 1000);
+      var date2 = new DateTime.fromMillisecondsSinceEpoch(
+          b.postTime.millisecondsSinceEpoch * 1000);
+      return date2.compareTo(date1);
     });
 //    print(posts[0].username);
 //    posts.forEach((element) {
@@ -141,6 +169,52 @@ class Database {
 //   });
     return posts;
 //    print(rawPost);
+  }
+
+  Future userPostData(String uid) async{
+    List<Post> posts = [];
+    List rawPost = [];
+    var userData;
+
+    await userRef.document(uid).get().then((value) {
+            userData= {
+              'username': value.data['name'],
+              'uid': value.data['uid'],
+              'userphoto': value.data['userphoto'],
+            };
+          rawPost.add(value.data['posts']);
+    });
+    print("MMM: "+rawPost.toString());
+
+    rawPost.forEach((element) {
+      List post = element;
+      post.forEach((element) {
+        posts.add(
+          createNewPostData(
+              element['text'],
+              element['photoUrl'],
+              element['comments'],
+              element['likes'],
+              element['postTime'],
+              userData['uid'],
+              userData['userphoto'],
+              userData['username']),
+        );
+      });
+    });
+    posts.sort((a, b) {
+      var date1 = new DateTime.fromMillisecondsSinceEpoch(
+          a.postTime.millisecondsSinceEpoch * 1000);
+      var date2 = new DateTime.fromMillisecondsSinceEpoch(
+          b.postTime.millisecondsSinceEpoch * 1000);
+      return date2.compareTo(date1);
+    });
+    print(posts[0].username);
+    posts.forEach((element) {
+      print(element.username+" "+element.text);
+   });
+
+    return posts;
   }
 
   Future createNewPost(String uid, String text, String url) async {
@@ -304,8 +378,7 @@ class Database {
     });
   }
 
-  Future disconnect(String curUser, String reqUser) async{
-
+  Future disconnect(String curUser, String reqUser) async {
     userRef.document(curUser).updateData({
       'followers': FieldValue.arrayRemove([reqUser])
     });
@@ -315,15 +388,13 @@ class Database {
     });
   }
 
-  Future unfollow(String curUser, String reqUser) async{
-
+  Future unfollow(String curUser, String reqUser) async {
     userRef.document(curUser).updateData({
-    'following': FieldValue.arrayRemove([reqUser])
+      'following': FieldValue.arrayRemove([reqUser])
     });
 
     userRef.document(reqUser).updateData({
-    'followers': FieldValue.arrayRemove([curUser])
+      'followers': FieldValue.arrayRemove([curUser])
     });
   }
-
 }
