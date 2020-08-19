@@ -62,16 +62,8 @@ class _SettingsPageState extends State<SettingsPage> {
       getposts(uid);
       firstime = false;
     }
-    return _selectedIndex == 4
-        ? SafeArea(
+    return SafeArea(
             child: Scaffold(
-              bottomNavigationBar: BottomNavBar(
-                  selectedIndex: 4,
-                  onItemTapped: (index) {
-                    setState(() {
-                      _selectedIndex = index;
-                    });
-                  }),
               body: userData == null
                   ? Loading()
                   : CustomScrollView(
@@ -105,11 +97,6 @@ class _SettingsPageState extends State<SettingsPage> {
                       ],
                     ),
             ),
-          )
-        : _selectedIndex == 0
-            ? HomePage()
-            : _selectedIndex == 1
-                ? SearchPage()
-                : _selectedIndex == 2 ? PostPage() : NotificationsPage();
+          );
   }
 }

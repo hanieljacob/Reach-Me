@@ -50,9 +50,7 @@ class _SearchPageState extends State<SearchPage> {
       getUsers(user.uid);
       firstime = false;
     }
-    return _selectedIndex == 1
-
-        ? SafeArea(
+    return SafeArea(
             child: Scaffold(
               appBar: AppBar(
                 title: TextFormField(
@@ -79,13 +77,6 @@ class _SearchPageState extends State<SearchPage> {
                 leading: Icon(Icons.search),
                 backgroundColor: Colors.blue,
               ),
-              bottomNavigationBar: BottomNavBar(
-                  selectedIndex: 1,
-                  onItemTapped: (index) {
-                    setState(() {
-                      _selectedIndex = index;
-                    });
-                  }),
               body: users.length == 0
                   ? SizedBox.shrink()
                   : UsersList(
@@ -101,11 +92,6 @@ class _SearchPageState extends State<SearchPage> {
                       curUser: curUser,
                     ),
             ),
-          )
-        : _selectedIndex == 0
-            ? HomePage()
-            : _selectedIndex == 2
-                ? PostPage()
-                : _selectedIndex == 3 ? NotificationsPage() : SettingsPage();
+          );
   }
 }

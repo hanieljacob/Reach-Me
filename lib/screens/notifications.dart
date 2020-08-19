@@ -36,16 +36,8 @@ class _NotificationsPageState extends State<NotificationsPage> {
       getRequestedUsers(user.uid);
       firsttime = false;
     }
-    return _selectedIndex == 3
-        ? SafeArea(
+    return SafeArea(
             child: Scaffold(
-                bottomNavigationBar: BottomNavBar(
-                    selectedIndex: 3,
-                    onItemTapped: (index) {
-                      setState(() {
-                        _selectedIndex = index;
-                      });
-                    }),
                 body: CustomScrollView(slivers: [
                   SliverList(
                     delegate: SliverChildBuilderDelegate(
@@ -81,11 +73,6 @@ class _NotificationsPageState extends State<NotificationsPage> {
                     }, childCount: reqUsers.length),
                   )
                 ])),
-          )
-        : _selectedIndex == 0
-            ? HomePage()
-            : _selectedIndex == 1
-                ? SearchPage()
-                : _selectedIndex == 2 ? PostPage() : SettingsPage();
+          );
   }
 }

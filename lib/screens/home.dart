@@ -49,16 +49,8 @@ class _HomePageState extends State<HomePage> {
       reload(user.uid);
       firstTime = false;
     }
-    return _selectedIndex == 0
-        ? Scaffold(
+    return Scaffold(
             backgroundColor: Colors.grey[100],
-            bottomNavigationBar: BottomNavBar(
-                selectedIndex: 0,
-                onItemTapped: (index) {
-                  setState(() {
-                    _selectedIndex = index;
-                  });
-                }),
             appBar: AppBar(
               leading: IconButton(
                 onPressed: () {},
@@ -80,28 +72,29 @@ class _HomePageState extends State<HomePage> {
                 ),
               ],
             ),
-            body: CustomScrollView(
-              slivers: <Widget>[
-                SliverList(
-                  delegate: SliverChildBuilderDelegate(
-                      (BuildContext context, int index) {
-                    return post.length == 0
-                        ? Center(
-                            child: Padding(
-                                padding: const EdgeInsets.only(top: 40.0),
-                                child: Loading()))
-                        : PostCard(
-                            post: post[index],
-                          );
-                  }, childCount: post.length == 0 ? 1 : post.length),
-                )
-              ],
+            body: RefreshIndicator(
+              onRefresh: () async{
+                reload(user.uid);
+                return await Future.delayed(Duration(seconds: 3));
+              },
+              child: CustomScrollView(
+                slivers: <Widget>[
+                  SliverList(
+                    delegate: SliverChildBuilderDelegate(
+                        (BuildContext context, int index) {
+                      return post.length == 0
+                          ? Center(
+                              child: Padding(
+                                  padding: const EdgeInsets.only(top: 40.0),
+                                  child: Loading()))
+                          : PostCard(
+                              post: post[index],
+                            );
+                    }, childCount: post.length == 0 ? 1 : post.length),
+                  )
+                ],
+              ),
             ),
-          )
-        : _selectedIndex == 1
-            ? SearchPage()
-            : _selectedIndex == 2
-                ? PostPage()
-                : _selectedIndex == 3 ? NotificationsPage() : SettingsPage();
+          );
   }
 }

@@ -70,6 +70,10 @@ class Database {
     return users;
   }
 
+  Future likePost(String currentUser, String postedUser){
+
+  }
+
   Future getUser(var userUid) async {
     User user;
     var result = await userRef.getDocuments();
@@ -233,9 +237,10 @@ class Database {
                   'comments': [],
                   'likes': [],
                   'postTime': DateTime.now(),
+                  'id' : post.length + 1,
                 });
                 userRef.document(uid).updateData({'posts': post});
-                // print(post.length);
+//                print(post.length);
                 // postCount = post.length;
               }
             }));

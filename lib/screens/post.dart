@@ -66,24 +66,18 @@ class _PostPageState extends State<PostPage> {
     bool posted = false;
     var user = Provider.of<FirebaseUser>(context);
     uid = user.uid;
-    return _selectedIndex == 2
-        ? Scaffold(
-            bottomNavigationBar: BottomNavBar(
-                selectedIndex: 2,
-                onItemTapped: (index) {
-                  setState(() {
-                    _selectedIndex = index;
-                  });
-                }),
+    return  Scaffold(
             body: SingleChildScrollView(
               child: Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: <Widget>[
                   Center(
-                    child: Text(
-                      "Create a post",
-                      style:
-                          TextStyle(fontSize: 30, fontWeight: FontWeight.bold),
+                    child: SafeArea(
+                      child: Text(
+                        "Create a post",
+                        style:
+                            TextStyle(fontSize: 30, fontWeight: FontWeight.bold),
+                      ),
                     ),
                   ),
                   Container(
@@ -170,11 +164,6 @@ class _PostPageState extends State<PostPage> {
                 )
               ],
             ),
-          )
-        : _selectedIndex == 0
-            ? HomePage()
-            : _selectedIndex == 1
-                ? SearchPage()
-                : _selectedIndex == 3 ? NotificationsPage() : SettingsPage();
+          );
   }
 }
