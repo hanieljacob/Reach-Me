@@ -254,6 +254,7 @@ class Database {
 
   Future likeAndUnlikePost(String currentUser, String postUser, String id) async{
     List post = [];
+    List likes = [];
     Map posts;
     bool isLiked;
     post = await getPosts(postUser);
@@ -273,7 +274,7 @@ class Database {
     userRef.document(postUser).updateData({
       'posts' : post
     });
-    return isLiked;
+    return posts['likes'];
   }
 
   Future getPosts(String uid) async {

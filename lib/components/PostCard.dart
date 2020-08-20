@@ -4,16 +4,20 @@ import 'package:flutter/widgets.dart';
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import 'package:reach_me/models/Post.dart';
+import 'package:reach_me/screens/home.dart';
 import 'package:reach_me/services/database.dart';
 
 class PostCard extends StatefulWidget {
   final Post post;
-  PostCard({this.post});
+  final Function callBack;
+  PostCard({this.post,this.callBack});
   @override
   _PostCardState createState() => _PostCardState();
 }
 
 class _PostCardState extends State<PostCard> {
+  int len = 0;
+  bool like = false;
   Database db = Database();
   String convertTime(Timestamp timestamp) {
     Timestamp currentTimestamp = Timestamp.now();
@@ -54,15 +58,27 @@ class _PostCardState extends State<PostCard> {
     }
     return (time);
   }
-
-  void Like(){
-
+  bool LikedOrNot(String uid,List likes){
+    bool isLiked = likes.contains(uid);
+    return isLiked;
   }
+
+  bool firstTime = true;
 
   @override
   Widget build(BuildContext context) {
+
     var user = Provider.of<FirebaseUser>(context);
-    bool isLiked = widget.post.likes.contains(user.uid);
+    List likes = [];
+
+    if(firstTime){
+      print("FT: "+widget.post.likes.toString());
+      setState(() {
+        len = widget.post.likes.length;
+        like = widget.post.likes.contains(user.uid);
+      });
+      firstTime = false;
+    }
     return Padding(
       padding: const EdgeInsets.fromLTRB(0, 0, 0, 10.0),
       child: Material(
@@ -115,18 +131,29 @@ class _PostCardState extends State<PostCard> {
                       padding: const EdgeInsets.all(8.0),
                       child: IconButton(
                         icon: Icon(
-                          isLiked == true?Icons.favorite:Icons.favorite_border,
+                          like?Icons.favorite:Icons.favorite_border,
                         ),
-                        onPressed: (){
-                            db.likeAndUnlikePost(user.uid, widget.post.uid, widget.post.id).then((value) => setState((){
-                              print(value);
-                              isLiked = value;
-                            }));
-                        },
+                        onPressed: () async{
+//                          print(widget.post.likes);
+//                          db.likeAndUnlikePost(user.uid, widget.post.uid, widget.post.id).then((value) => setState((){
+//                            i++;
+//                            print(value);
+//                            isLiked = value;
+//                          }));
+                            likes = await db.likeAndUnlikePost(user.uid, widget.post.uid, widget.post.id);
+                            widget.post.likes = likes;
+                            setState(() {
+                              like = LikedOrNot(user.uid,likes);
+                              len = likes.length;
+                              likes.forEach((element) {
+                                print("ELEMENT: "+element);
+                              });
+                            });
+                          },
+                        ),
                       ),
-                    ),
                     Text(
-                      widget.post.likes.length.toString()
+                      len.toString()
                     ),
                     Padding(
                       padding: const EdgeInsets.all(8.0),

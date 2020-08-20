@@ -95,6 +95,11 @@ class _HomePageState extends State<HomePage> {
                             )
                           : PostCard(
                               post: post[index],
+                              callBack: () {
+                                setState(() {
+
+                                });
+                              },
                             );
                     }, childCount: post.length == 0 ? 1 : post.length),
                   )
