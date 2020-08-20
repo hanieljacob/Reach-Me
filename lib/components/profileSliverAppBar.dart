@@ -1,4 +1,3 @@
-import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
 import 'package:reach_me/models/User.dart';
 import 'package:reach_me/screens/FollowersPage.dart';
@@ -85,8 +84,13 @@ class _ProfileSliverAppBarState extends State<ProfileSliverAppBar> {
                     ),
                   ),
                   GestureDetector(
-                    onTap: (){
-                      Navigator.push(context, MaterialPageRoute(builder: (context)=> FollowersPage(followers: widget.user.followers,uid: widget.user.uid)));
+                    onTap: () {
+                      Navigator.push(
+                          context,
+                          MaterialPageRoute(
+                              builder: (context) => FollowersPage(
+                                  followers: widget.user.followers,
+                                  uid: widget.user.uid)));
                     },
                     child: Padding(
                       padding: const EdgeInsets.symmetric(
@@ -117,8 +121,13 @@ class _ProfileSliverAppBarState extends State<ProfileSliverAppBar> {
                     ),
                   ),
                   GestureDetector(
-                    onTap: (){
-                      Navigator.push(context, MaterialPageRoute(builder: (context)=> FollowingPage(followers: widget.user.following,uid: widget.user.uid)));
+                    onTap: () {
+                      Navigator.push(
+                          context,
+                          MaterialPageRoute(
+                              builder: (context) => FollowingPage(
+                                  followers: widget.user.following,
+                                  uid: widget.user.uid)));
                     },
                     child: Padding(
                       padding: const EdgeInsets.symmetric(
@@ -157,4 +166,3 @@ class _ProfileSliverAppBarState extends State<ProfileSliverAppBar> {
     );
   }
 }
-

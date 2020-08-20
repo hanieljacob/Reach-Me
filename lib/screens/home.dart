@@ -8,13 +8,14 @@ import 'search.dart';
 import 'post.dart';
 import 'notifications.dart';
 import 'account.dart';
-import '../components/bottom_navbar.dart';
+
 import '../services/receive.dart';
 import 'package:provider/provider.dart';
 import '../services/database.dart';
-import '../components/loading.dart';
 
 class HomePage extends StatefulWidget {
+  final int index;
+  HomePage({this.index});
   @override
   _HomePageState createState() => _HomePageState();
 }
@@ -28,11 +29,9 @@ class _HomePageState extends State<HomePage> {
   AuthProvider _authProvider = AuthProvider();
 
   void reload(String uid) {
-//    refresh(uid).then((val) => setState(() {
-//          url = val;
-//        }));
     db.getPostData(uid).then((value) => setState(() {
           post = value;
+          print(value.toString() + 'hello');
         }));
   }
 
@@ -44,16 +43,21 @@ class _HomePageState extends State<HomePage> {
 
   @override
   Widget build(BuildContext context) {
+    _selectedIndex = widget.index;
     var user = Provider.of<FirebaseUser>(context);
     if (firstTime) {
+      print("Hello There");
       reload(user.uid);
       firstTime = false;
     }
-    return Scaffold(
+    return _selectedIndex == 0
+        ? Scaffold(
             backgroundColor: Colors.grey[100],
             appBar: AppBar(
               leading: IconButton(
-                onPressed: () {},
+                onPressed: () {
+                  reload(user.uid);
+                },
                 icon: Icon(
                   Icons.public,
                   color: Colors.white,
@@ -73,9 +77,9 @@ class _HomePageState extends State<HomePage> {
               ],
             ),
             body: RefreshIndicator(
-              onRefresh: () async{
+              onRefresh: () async {
                 reload(user.uid);
-                return await Future.delayed(Duration(seconds: 3));
+                return await Future.delayed(Duration(seconds: 2));
               },
               child: CustomScrollView(
                 slivers: <Widget>[
@@ -85,8 +89,10 @@ class _HomePageState extends State<HomePage> {
                       return post.length == 0
                           ? Center(
                               child: Padding(
-                                  padding: const EdgeInsets.only(top: 40.0),
-                                  child: Loading()))
+                                padding: const EdgeInsets.only(top: 40.0),
+                                child: Text('No Post'),
+                              ),
+                            )
                           : PostCard(
                               post: post[index],
                             );
@@ -95,6 +101,21 @@ class _HomePageState extends State<HomePage> {
                 ],
               ),
             ),
-          );
+          )
+        : _selectedIndex == 1
+            ? SearchPage(
+                index: widget.index,
+              )
+            : _selectedIndex == 2
+                ? PostPage(
+                    index: widget.index,
+                  )
+                : _selectedIndex == 3
+                    ? NotificationsPage(
+                        index: widget.index,
+                      )
+                    : SettingsPage(
+                        index: widget.index,
+                      );
   }
 }

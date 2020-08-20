@@ -1,10 +1,6 @@
 import 'package:flutter/material.dart';
-import '../components/bottom_navbar.dart';
-import '../screens/home.dart';
-import 'search.dart';
-import 'post.dart';
-import 'notifications.dart';
-import 'account.dart';
+import 'package:reach_me/components/bottom_navbar.dart';
+import 'package:reach_me/screens/home.dart';
 
 class Wrapper extends StatefulWidget {
   @override
@@ -12,27 +8,25 @@ class Wrapper extends StatefulWidget {
 }
 
 class _WrapperState extends State<Wrapper> {
-  int current_tab = 0;
+  int currentIndex = 0;
   @override
   Widget build(BuildContext context) {
     return Scaffold(
       bottomNavigationBar: BottomNavBar(
-        selectedIndex: current_tab,
-        onItemTapped: (value){
-            setState(() {
-              current_tab = value;
-            });
+        selectedIndex: currentIndex,
+        onItemTapped: (value) {
+          setState(() {
+            currentIndex = value;
+          });
         },
       ),
       body: IndexedStack(
-        children: <Widget>[
-          HomePage(),
-          SearchPage(),
-          PostPage(),
-          NotificationsPage(),
-          SettingsPage(),
+        children: [
+          HomePage(
+            index: currentIndex,
+          ),
         ],
-        index: current_tab,
+        index: 0,
       ),
     );
   }

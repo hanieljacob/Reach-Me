@@ -4,7 +4,6 @@ import 'package:provider/provider.dart';
 import 'package:reach_me/screens/login.dart';
 import 'package:reach_me/screens/wrapper.dart';
 
-import './screens/home.dart';
 import './screens/login.dart';
 
 void main() {

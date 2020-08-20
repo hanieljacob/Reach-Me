@@ -1,7 +1,6 @@
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:firebase_auth/firebase_auth.dart';
-import 'package:flutter/material.dart';
-import 'package:provider/provider.dart';
+
 import 'package:reach_me/models/Post.dart';
 import '../models/User.dart';
 
@@ -68,10 +67,6 @@ class Database {
       print(element.name);
     });
     return users;
-  }
-
-  Future likePost(String currentUser, String postedUser){
-
   }
 
   Future getUser(var userUid) async {
@@ -175,20 +170,20 @@ class Database {
 //    print(rawPost);
   }
 
-  Future userPostData(String uid) async{
+  Future userPostData(String uid) async {
     List<Post> posts = [];
     List rawPost = [];
     var userData;
 
     await userRef.document(uid).get().then((value) {
-            userData= {
-              'username': value.data['name'],
-              'uid': value.data['uid'],
-              'userphoto': value.data['userphoto'],
-            };
-          rawPost.add(value.data['posts']);
+      userData = {
+        'username': value.data['name'],
+        'uid': value.data['uid'],
+        'userphoto': value.data['userphoto'],
+      };
+      rawPost.add(value.data['posts']);
     });
-    print("MMM: "+rawPost.toString());
+    print("MMM: " + rawPost.toString());
 
     rawPost.forEach((element) {
       List post = element;
@@ -215,8 +210,8 @@ class Database {
     });
     print(posts[0].username);
     posts.forEach((element) {
-      print(element.username+" "+element.text);
-   });
+      print(element.username + " " + element.text);
+    });
 
     return posts;
   }
@@ -237,10 +232,10 @@ class Database {
                   'comments': [],
                   'likes': [],
                   'postTime': DateTime.now(),
-                  'id' : post.length + 1,
+                  'id': post.length + 1,
                 });
                 userRef.document(uid).updateData({'posts': post});
-//                print(post.length);
+                // print(post.length);
                 // postCount = post.length;
               }
             }));

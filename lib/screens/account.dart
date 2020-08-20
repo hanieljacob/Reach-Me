@@ -11,9 +11,10 @@ import 'home.dart';
 import 'search.dart';
 import 'post.dart';
 import 'notifications.dart';
-import '../components/bottom_navbar.dart';
 
 class SettingsPage extends StatefulWidget {
+  final int index;
+  SettingsPage({this.index});
   @override
   _SettingsPageState createState() => _SettingsPageState();
 }
@@ -45,24 +46,26 @@ class _SettingsPageState extends State<SettingsPage> {
         },
       ),
     );
-    db.userPostData(uid).then((value) => setState((){post=value;}));
+    db.userPostData(uid).then((value) => setState(() {
+          post = value;
+        }));
   }
 
   Future getPostUrl(String uid) async {
     return await db.getUser(uid);
   }
 
-
-
   @override
   Widget build(BuildContext context) {
+    _selectedIndex = widget.index;
     var user = Provider.of<FirebaseUser>(context);
     uid = user.uid;
     if (firstime) {
       getposts(uid);
       firstime = false;
     }
-    return SafeArea(
+    return _selectedIndex == 4
+        ? SafeArea(
             child: Scaffold(
               body: userData == null
                   ? Loading()
@@ -70,8 +73,7 @@ class _SettingsPageState extends State<SettingsPage> {
                       slivers: <Widget>[
                         ProfileSliverAppBar(
                           user: userData,
-                          posts:
-                              userData == null ? 0 : userData.posts.length,
+                          posts: userData == null ? 0 : userData.posts.length,
                           followers:
                               userData == null ? 0 : userData.followers.length,
                           following:
@@ -88,15 +90,28 @@ class _SettingsPageState extends State<SettingsPage> {
                                         'Oops! Looks like you havent posted anything yet.'),
                                   ))
                                 : PostCard(
-                              post: post[index],
-                            );
-                          },
-                              childCount:
-                                  post.length == 0 ? 1 : post.length),
+                                    post: post[index],
+                                  );
+                          }, childCount: post.length == 0 ? 1 : post.length),
                         )
                       ],
                     ),
             ),
-          );
+          )
+        : _selectedIndex == 0
+            ? HomePage(
+                index: widget.index,
+              )
+            : _selectedIndex == 1
+                ? SearchPage(
+                    index: widget.index,
+                  )
+                : _selectedIndex == 2
+                    ? PostPage(
+                        index: widget.index,
+                      )
+                    : NotificationsPage(
+                        index: widget.index,
+                      );
   }
 }

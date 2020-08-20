@@ -7,7 +7,7 @@ class Loading extends StatelessWidget {
   Widget build(BuildContext context) {
     return Container(
       width: double.infinity,
-      color: Colors.transparent,
+      color: Colors.white,
       child: Column(
         mainAxisAlignment: MainAxisAlignment.center,
         children: <Widget>[
@@ -16,8 +16,8 @@ class Loading extends StatelessWidget {
           ),
           SizedBox(
             height: 10,
-            ),
-            Text(
+          ),
+          Text(
             'Loading',
             style: TextStyle(
                 color: Colors.blue, fontWeight: FontWeight.w400, fontSize: 18),
