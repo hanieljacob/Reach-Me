@@ -1,3 +1,5 @@
+import 'dart:math';
+
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 
@@ -6,6 +8,10 @@ import '../models/User.dart';
 
 class Database {
   CollectionReference userRef = Firestore.instance.collection("Users");
+  var _chars = 'AaBbCcDdEeFfGgHhIiJjKkLlMmNnOoPpQqRrSsTtUuVvWwXxYyZz1234567890';
+  Random _rnd = Random();
+  String getRandomString(int length) => String.fromCharCodes(Iterable.generate(
+      length, (_) => _chars.codeUnitAt(_rnd.nextInt(_chars.length))));
 
   User createUser(
     String name,
@@ -97,7 +103,8 @@ class Database {
       Timestamp postTime,
       String uid,
       String userphoto,
-      String username) {
+      String username,
+      String id) {
     return Post(
         text: text,
         photoUrl: photoUrl,
@@ -106,7 +113,8 @@ class Database {
         postTime: postTime,
         uid: uid,
         username: username,
-        userphoto: userphoto);
+        userphoto: userphoto,
+        id: id);
   }
 
   Future getPostData(String uid) async {
@@ -147,7 +155,8 @@ class Database {
               element['postTime'],
               userData[ind]['uid'],
               userData[ind]['userphoto'],
-              userData[ind]['username']),
+              userData[ind]['username'],
+              element['id']),
         );
         ind++;
       });
@@ -197,7 +206,8 @@ class Database {
               element['postTime'],
               userData['uid'],
               userData['userphoto'],
-              userData['username']),
+              userData['username'],
+              element['id']),
         );
       });
     });
@@ -232,7 +242,7 @@ class Database {
                   'comments': [],
                   'likes': [],
                   'postTime': DateTime.now(),
-                  'id': post.length + 1,
+                  'id': getRandomString(15),
                 });
                 userRef.document(uid).updateData({'posts': post});
                 // print(post.length);
@@ -240,6 +250,30 @@ class Database {
               }
             }));
     // return postCount;
+  }
+
+  Future likeAndUnlikePost(String currentUser, String postUser, String id) async{
+    List post = [];
+    Map posts;
+    bool isLiked;
+    post = await getPosts(postUser);
+    post.forEach((element) {
+      if(element['id'] == id) {
+        if(element['likes'].contains(currentUser)){
+          element['likes'].remove(currentUser);
+          isLiked = false;
+        }
+        else {
+          element['likes'].add(currentUser);
+          isLiked = true;
+        }
+        posts = element;
+      }
+    });
+    userRef.document(postUser).updateData({
+      'posts' : post
+    });
+    return isLiked;
   }
 
   Future getPosts(String uid) async {

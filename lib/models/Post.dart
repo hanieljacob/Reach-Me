@@ -9,5 +9,6 @@ class Post{
   String username;
   String uid;
   String userphoto;
-  Post({this.text,this.photoUrl,this.comments,this.likes,this.postTime,this.uid,this.username,this.userphoto});
+  String id;
+  Post({this.text,this.photoUrl,this.comments,this.likes,this.postTime,this.uid,this.username,this.userphoto,this.id});
 }

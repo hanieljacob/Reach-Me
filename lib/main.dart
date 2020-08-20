@@ -1,9 +1,9 @@
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
 import 'package:provider/provider.dart';
 import 'package:reach_me/screens/login.dart';
 import 'package:reach_me/screens/wrapper.dart';
-
 import './screens/login.dart';
 
 void main() {
@@ -14,6 +14,9 @@ class MyApp extends StatelessWidget {
   // This widget is the root of your application.
   @override
   Widget build(BuildContext context) {
+    SystemChrome.setSystemUIOverlayStyle(SystemUiOverlayStyle(
+        statusBarColor: Colors.black
+    ));
     return MultiProvider(
       providers: [
         StreamProvider<FirebaseUser>.value(

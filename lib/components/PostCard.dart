@@ -1,7 +1,10 @@
 import 'package:cloud_firestore/cloud_firestore.dart';
+import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/widgets.dart';
 import 'package:flutter/material.dart';
+import 'package:provider/provider.dart';
 import 'package:reach_me/models/Post.dart';
+import 'package:reach_me/services/database.dart';
 
 class PostCard extends StatefulWidget {
   final Post post;
@@ -11,6 +14,7 @@ class PostCard extends StatefulWidget {
 }
 
 class _PostCardState extends State<PostCard> {
+  Database db = Database();
   String convertTime(Timestamp timestamp) {
     Timestamp currentTimestamp = Timestamp.now();
     int diff = currentTimestamp.millisecondsSinceEpoch -
@@ -51,8 +55,14 @@ class _PostCardState extends State<PostCard> {
     return (time);
   }
 
+  void Like(){
+
+  }
+
   @override
   Widget build(BuildContext context) {
+    var user = Provider.of<FirebaseUser>(context);
+    bool isLiked = widget.post.likes.contains(user.uid);
     return Padding(
       padding: const EdgeInsets.fromLTRB(0, 0, 0, 10.0),
       child: Material(
@@ -103,9 +113,20 @@ class _PostCardState extends State<PostCard> {
                     ),
                     Padding(
                       padding: const EdgeInsets.all(8.0),
-                      child: Icon(
-                        Icons.favorite_border,
+                      child: IconButton(
+                        icon: Icon(
+                          isLiked == true?Icons.favorite:Icons.favorite_border,
+                        ),
+                        onPressed: (){
+                            db.likeAndUnlikePost(user.uid, widget.post.uid, widget.post.id).then((value) => setState((){
+                              print(value);
+                              isLiked = value;
+                            }));
+                        },
                       ),
+                    ),
+                    Text(
+                      widget.post.likes.length.toString()
                     ),
                     Padding(
                       padding: const EdgeInsets.all(8.0),
