@@ -277,6 +277,29 @@ class Database {
     return posts['likes'];
   }
 
+  Future likeAPost(String currentUser, String postUser, String id) async{
+    List post = [];
+    List likes = [];
+    Map posts;
+    bool isLiked;
+    post = await getPosts(postUser);
+    post.forEach((element) {
+      if(element['id'] == id) {
+        if(element['likes'].contains(currentUser)){
+        }
+        else {
+          element['likes'].add(currentUser);
+          isLiked = true;
+        }
+        posts = element;
+      }
+    });
+    userRef.document(postUser).updateData({
+      'posts' : post
+    });
+    return posts['likes'];
+  }
+
   Future getPosts(String uid) async {
     List post;
     await userRef

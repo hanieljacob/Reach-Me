@@ -83,6 +83,10 @@ class _PostCardState extends State<PostCard> {
       padding: const EdgeInsets.fromLTRB(0, 0, 0, 10.0),
       child: Material(
         elevation: 5,
+        borderRadius: BorderRadius.only(
+          bottomLeft: const Radius.circular(12.0),
+          bottomRight: const Radius.circular(12.0),
+        ),
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: <Widget>[
@@ -102,74 +106,132 @@ class _PostCardState extends State<PostCard> {
                   ),
                 ),
                 Padding(
-                  padding: const EdgeInsets.all(8.0),
+                  padding: const EdgeInsets.fromLTRB(8.0,0,0,0),
                   child: Text(
                     widget.post.username,
+                    style: TextStyle(
+                      fontWeight: FontWeight.bold,
+                    ),
                   ),
                 ),
               ],
             ),
-            Image.network(widget.post.photoUrl),
             Padding(
-              padding: const EdgeInsets.all(8.0),
-              child: Text(
-                widget.post.text,
+              padding: const EdgeInsets.fromLTRB(8.0,0,8.0,8.0),
+              child: GestureDetector(
+                child: Image.network(widget.post.photoUrl,fit: BoxFit.cover,
+                  loadingBuilder:(BuildContext context, Widget child,ImageChunkEvent loadingProgress) {
+                    if (loadingProgress == null) return child;
+                    return Center(
+                      child: CircularProgressIndicator(
+                        value: loadingProgress.expectedTotalBytes != null ?
+                        loadingProgress.cumulativeBytesLoaded / loadingProgress.expectedTotalBytes
+                            : null,
+                      ),
+                    );
+                  },
+                ),
+                onDoubleTap: () async{
+                  likes = await db.likeAPost(user.uid, widget.post.uid, widget.post.id);
+                  widget.post.likes = likes;
+                  setState(() {
+                    like = LikedOrNot(user.uid,likes);
+                    len = likes.length;
+                    print("LIKE: "+like.toString());
+                    likes.forEach((element) {
+                      print("ELEMENT: "+element);
+                    });
+                  });
+                },
               ),
             ),
             Row(
-              mainAxisAlignment: MainAxisAlignment.spaceBetween,
               children: <Widget>[
-                Row(
-                  children: [
-                    Padding(
-                      padding: const EdgeInsets.all(8.0),
-                      child: Icon(
-                        Icons.comment,
-                      ),
+                Padding(
+                  padding: const EdgeInsets.all(8.0),
+                  child: Text(
+                    widget.post.username,
+                    style: TextStyle(
+                      fontWeight: FontWeight.bold,
                     ),
-                    Padding(
-                      padding: const EdgeInsets.all(8.0),
-                      child: IconButton(
-                        icon: Icon(
-                          like?Icons.favorite:Icons.favorite_border,
-                        ),
-                        onPressed: () async{
+                  ),
+                ),
+                Padding(
+                  padding: const EdgeInsets.all(8.0),
+                  child: Text(
+                    widget.post.text,
+                  ),
+                ),
+              ],
+            ),
+            Row(
+              children: <Widget>[
+                Padding(
+                  padding: const EdgeInsets.fromLTRB(0,4.0,8.0,8.0),
+                  child: IconButton(
+                    icon: like?Icon(
+                      Icons.favorite,
+                      size: 30,
+                      color: Color(0xfffb3958),
+                    ):Icon(
+                      Icons.favorite_border,
+                      size: 30,
+                    ),
+                    onPressed: () async{
 //                          print(widget.post.likes);
 //                          db.likeAndUnlikePost(user.uid, widget.post.uid, widget.post.id).then((value) => setState((){
 //                            i++;
 //                            print(value);
 //                            isLiked = value;
 //                          }));
-                            likes = await db.likeAndUnlikePost(user.uid, widget.post.uid, widget.post.id);
-                            widget.post.likes = likes;
-                            setState(() {
-                              like = LikedOrNot(user.uid,likes);
-                              len = likes.length;
-                              likes.forEach((element) {
-                                print("ELEMENT: "+element);
-                              });
-                            });
-                          },
-                        ),
-                      ),
-                    Text(
-                      len.toString()
-                    ),
-                    Padding(
-                      padding: const EdgeInsets.all(8.0),
-                      child: Icon(
-                        Icons.share,
-                      ),
-                    ),
-                  ],
+                      likes = await db.likeAndUnlikePost(user.uid, widget.post.uid, widget.post.id);
+                      widget.post.likes = likes;
+                      setState(() {
+                        like = LikedOrNot(user.uid,likes);
+                        len = likes.length;
+                        likes.forEach((element) {
+                          print("ELEMENT: "+element);
+                        });
+                      });
+                    },
+                  ),
                 ),
                 Padding(
-                  padding: const EdgeInsets.all(8.0),
-                  child: Text(
-                    convertTime(widget.post.postTime),
+                  padding: const EdgeInsets.fromLTRB(8.0,4.0,8.0,8.0),
+                  child: Icon(
+                    Icons.comment,
+                    size: 30,
+                  ),
+                ),
+
+                Padding(
+                  padding: const EdgeInsets.fromLTRB(16.0,4.0,8.0,8.0),
+                  child: Icon(
+                    Icons.share,
+                    size: 30,
                   ),
                 ),
               ],
+            ),
+            Row(
+              children: <Widget>[
+                Padding(
+                  padding: const EdgeInsets.fromLTRB(16.0,0,0,8.0),
+                  child: Text(
+                      len==1?len.toString()+" like":len.toString()+" likes",
+                      style: TextStyle(
+                        fontWeight: FontWeight.bold,
+                        fontSize: 16,
+                      ),
+                  ),
+                ),
+              ],
+            ),
+            Padding(
+              padding: const EdgeInsets.fromLTRB(16.0,8.0,0,8.0),
+              child: Text(
+                convertTime(widget.post.postTime),
+              ),
             ),
           ],
         ),
