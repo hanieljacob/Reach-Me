@@ -300,6 +300,31 @@ class Database {
     return posts['likes'];
   }
 
+  Future getLikedUsers(List uid) async{
+    List users = [];
+    var result = await userRef.getDocuments();
+    result.documents.forEach((element) {
+      if (uid.contains(element.documentID)) {
+        users.add(
+          createUser(
+            element.data['name'],
+            element.data['uid'],
+            element.data['userphoto'],
+            element.data['posts'],
+            element.data['followers'],
+            element.data['following'],
+            element.data['requests'],
+            element.data['requested'],
+          ),
+        );
+      }
+    });
+    users.forEach((element) {
+      print(element.name);
+    });
+    return users;
+  }
+
   Future getPosts(String uid) async {
     List post;
     await userRef
@@ -415,6 +440,29 @@ class Database {
               if (key == 'requests') requests = value;
             }));
     return requests;
+  }
+
+  Future addComment(String currentUser, String postUser, String comment, String postId) async{
+    List post = [];
+    List comments = [];
+    post = await getPosts(postUser);
+    post.forEach((element) {
+      if(postId == element['id']){
+        element['comments'].add({
+          'currentUser' : currentUser,
+          'comment' : comment
+        });
+//        comments.add({
+//          'currentUser' : currentUser,
+//          'comment' : comment
+//        });
+      }
+      comments.add(element);
+    });
+    print(comments);
+    userRef.document(postUser).updateData({
+      'posts' : comments
+    });
   }
 
   Future addFollowerAndFollowing(String curUser, String reqUser) async {

@@ -4,7 +4,8 @@ import 'package:flutter/widgets.dart';
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import 'package:reach_me/models/Post.dart';
-import 'package:reach_me/screens/home.dart';
+import 'package:reach_me/screens/FollowingPage.dart';
+import 'package:reach_me/screens/comments.dart';
 import 'package:reach_me/services/database.dart';
 
 class PostCard extends StatefulWidget {
@@ -196,11 +197,14 @@ class _PostCardState extends State<PostCard> {
                     },
                   ),
                 ),
-                Padding(
-                  padding: const EdgeInsets.fromLTRB(8.0,4.0,8.0,8.0),
-                  child: Icon(
-                    Icons.comment,
-                    size: 30,
+                GestureDetector(
+                  onTap: (){Navigator.push(context, MaterialPageRoute(builder: (context) => CommentsPage(postId: widget.post.id,postUser: widget.post.uid,)));},
+                  child: Padding(
+                    padding: const EdgeInsets.fromLTRB(8.0,4.0,8.0,8.0),
+                    child: Icon(
+                      Icons.comment,
+                      size: 30,
+                    ),
                   ),
                 ),
 
@@ -213,19 +217,18 @@ class _PostCardState extends State<PostCard> {
                 ),
               ],
             ),
-            Row(
-              children: <Widget>[
-                Padding(
-                  padding: const EdgeInsets.fromLTRB(16.0,0,0,8.0),
-                  child: Text(
-                      len==1?len.toString()+" like":len.toString()+" likes",
-                      style: TextStyle(
-                        fontWeight: FontWeight.bold,
-                        fontSize: 16,
-                      ),
-                  ),
+            GestureDetector(
+              onTap: (){Navigator.push(context, MaterialPageRoute(builder: (context) => FollowingPage(followers: widget.post.likes,uid: user.uid,title: "Likes")));},
+              child: Padding(
+                padding: const EdgeInsets.fromLTRB(16.0,0,0,8.0),
+                child: Text(
+                    len==1?len.toString()+" like":len.toString()+" likes",
+                    style: TextStyle(
+                      fontWeight: FontWeight.bold,
+                      fontSize: 16,
+                    ),
                 ),
-              ],
+              ),
             ),
             Padding(
               padding: const EdgeInsets.fromLTRB(16.0,8.0,0,8.0),

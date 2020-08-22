@@ -127,7 +127,8 @@ class _ProfileSliverAppBarState extends State<ProfileSliverAppBar> {
                           MaterialPageRoute(
                               builder: (context) => FollowingPage(
                                   followers: widget.user.following,
-                                  uid: widget.user.uid)));
+                                  uid: widget.user.uid,
+                                  title: "Following",)));
                     },
                     child: Padding(
                       padding: const EdgeInsets.symmetric(

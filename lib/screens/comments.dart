@@ -71,7 +71,7 @@ class _CommentsPageState extends State<CommentsPage> {
                   Icons.add_comment
                 ),
                 onPressed: (){
-                  //db.addComment(user.uid, widget.postUser, comment, widget.postId);
+                  db.addComment(user.uid, widget.postUser, comment, widget.postId);
                 },
               ),
             ],
