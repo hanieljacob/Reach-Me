@@ -442,27 +442,33 @@ class Database {
     return requests;
   }
 
-  Future addComment(String currentUser, String postUser, String comment, String postId) async{
+  Future addComment(String curUser,String postUser,String comment,String postID) async{
+    List post = [];
+    Map comments;
+    User user;
+    post = await getPosts(postUser);
+    user = await getUser(curUser);
+    post.forEach((element) {
+      if(element['id']==postID){
+        comments = {'user':curUser,'comment':comment,'time':Timestamp.now(),'userPic':user.photoUrl,'username':user.name};
+        element['comments'].add(comments);
+      }
+    });
+    userRef.document(postUser).updateData({
+      'posts':post,
+    });
+  }
+
+  Future getComments(String postUser,postID) async{
     List post = [];
     List comments = [];
     post = await getPosts(postUser);
     post.forEach((element) {
-      if(postId == element['id']){
-        element['comments'].add({
-          'currentUser' : currentUser,
-          'comment' : comment
-        });
-//        comments.add({
-//          'currentUser' : currentUser,
-//          'comment' : comment
-//        });
+      if(element['id']==postID){
+        comments = element['comments'];
       }
-      comments.add(element);
     });
-    print(comments);
-    userRef.document(postUser).updateData({
-      'posts' : comments
-    });
+    return comments;
   }
 
   Future addFollowerAndFollowing(String curUser, String reqUser) async {
