@@ -14,16 +14,16 @@ class Database {
       length, (_) => _chars.codeUnitAt(_rnd.nextInt(_chars.length))));
 
   User createUser(
-    String name,
-    String uid,
-    String photourl,
-    List posts,
-    List followers,
-    List following,
-    List requests,
-    List requested,
+      String name,
+      String uid,
+      String photourl,
+      List posts,
+      List followers,
+      List following,
+      List requests,
+      List requested,
       List saved
-  ) {
+      ) {
     return User(
       name: name,
       uid: uid,
@@ -101,33 +101,43 @@ class Database {
   }
 
   Future addSavedPost(String uid,Post post) async{
-    List saved = [];
+    List savedPosts = [];
+    List savesId=[];
     Map posts = {'id':post.id,'text' : post.text,'photoUrl' : post.photoUrl,'comments': post.comments,'postTime' : post.postTime,'likes':post.likes,'username':post.username,'uid':post.uid,'userphoto': post.userphoto};
     userRef.document(uid).get().then((value) {
-      saved = value.data['saved'];
-      if(saved.contains(post.id))
+      savedPosts = value.data['saved'];
+      savedPosts.forEach((element) {
+        savesId.add(element['id']);
+      });
+      if(savesId.contains(post.id)){
+        removeSavedPost(uid, post.id);
+        savesId.remove(post.id);
+      }
+      else{
         userRef.document(uid).updateData({
           'saved' : FieldValue.arrayUnion([posts])
         });
-      else
-        removeSavedPost(uid, post.id);
-    });
-  }
-
-  Future removeSavedPost(String uid,String postId) async{
-    List posts = [];
-    List posts2 = [];
-    await userRef.document(uid).get().then((value) {
-      posts = value.data['saved'];
-    });
-    posts.forEach((element) {
-      if(element['id'] != postId){
-        posts2.add(element);
+        savesId.add(post.id);
       }
     });
-    userRef.document(uid).updateData({
-      'saved' : posts2
+    return savesId;
+  }
+
+  void removeSavedPost(String uid,String postId) async{
+    List posts = [];
+    List posts2 = [];
+    userRef.document(uid).get().then((value) {
+      posts = value.data['saved'];
+      posts.forEach((element) {
+        if(element['id'] != postId){
+          posts2.add(element);
+        }
+      });
+      userRef.document(uid).updateData({
+        'saved' : posts2
+      });
     });
+
   }
 
   Future getSavedPost(String uid) async{
@@ -148,7 +158,7 @@ class Database {
             element['userphoto'],
             element['username'],
             element['id']),
-        );
+      );
     });
     return post;
   }
@@ -161,7 +171,7 @@ class Database {
     });
     posts.forEach((element) {
       post.add(
-        element['id']
+          element['id']
       );
     });
     print(post);
@@ -307,21 +317,21 @@ class Database {
         .document(uid)
         .get()
         .then((value) => value.data.forEach((key, value) {
-              if (key == "posts") {
-                post = value;
-                post.add({
-                  'text': text,
-                  'photoUrl': url,
-                  'comments': [],
-                  'likes': [],
-                  'postTime': DateTime.now(),
-                  'id': getRandomString(15),
-                });
-                userRef.document(uid).updateData({'posts': post});
-                // print(post.length);
-                // postCount = post.length;
-              }
-            }));
+      if (key == "posts") {
+        post = value;
+        post.add({
+          'text': text,
+          'photoUrl': url,
+          'comments': [],
+          'likes': [],
+          'postTime': DateTime.now(),
+          'id': getRandomString(15),
+        });
+        userRef.document(uid).updateData({'posts': post});
+        // print(post.length);
+        // postCount = post.length;
+      }
+    }));
     // return postCount;
   }
 
@@ -405,10 +415,10 @@ class Database {
         .document(uid)
         .get()
         .then((value) => value.data.forEach((key, value) {
-              if (key == "posts") {
-                post = value;
-              }
-            }));
+      if (key == "posts") {
+        post = value;
+      }
+    }));
     // print('Hello' + postCount.toString());
 
     return post;
@@ -421,12 +431,12 @@ class Database {
         .document(uid)
         .get()
         .then((value) => value.data.forEach((key, value) {
-              if (key == "posts") {
-                post = value;
-                // print(post.length);
-                postCount = post.length + 1;
-              }
-            }));
+      if (key == "posts") {
+        post = value;
+        // print(post.length);
+        postCount = post.length + 1;
+      }
+    }));
     print('Hello' + postCount.toString());
     return postCount;
   }
@@ -513,8 +523,8 @@ class Database {
         .document(uid)
         .get()
         .then((value) => value.data.forEach((key, value) {
-              if (key == 'requests') requests = value;
-            }));
+      if (key == 'requests') requests = value;
+    }));
     return requests;
   }
 
@@ -594,7 +604,7 @@ class Database {
     posts = await getPosts(postUser);
     posts.forEach((element) {
       if(postId != element['id']){
-         posts2.add(element);
+        posts2.add(element);
       }
     });
     userRef.document(postUser).updateData({

@@ -5,7 +5,7 @@ import 'package:provider/provider.dart';
 import 'package:reach_me/models/Post.dart';
 import 'package:reach_me/screens/FollowingPage.dart';
 import 'package:reach_me/screens/comments.dart';
-import 'package:reach_me/screens/saved.dart';
+
 import 'package:reach_me/services/database.dart';
 
 class PostCard extends StatefulWidget {
@@ -21,7 +21,7 @@ class _PostCardState extends State<PostCard> {
   int len = 0;
   bool like = false;
   List saved = [];
-  bool save = false;
+
   Database db = Database();
 
   showAlertDialog(BuildContext context, String postUser, String postId) {
@@ -55,27 +55,33 @@ class _PostCardState extends State<PostCard> {
     return isLiked;
   }
 
-  void getData(String uid) async{
-    saved = await db.getSavedPostId(uid);
-    print(saved.toString()+"get post");
+  void getData(String uid)async {
+    await db.getSavedPostId(uid).then((value) => setState((){saved=value;}));
   }
+
+
 
   bool firstTime = true;
 
   @override
   Widget build(BuildContext context) {
+
+
     var user = Provider.of<FirebaseUser>(context);
     List likes = [];
-    getData(user.uid);
+
+
+
     if(firstTime){
+      getData(user.uid);
       print("FT: "+widget.post.likes.toString());
       setState(() {
         len = widget.post.likes.length;
         like = widget.post.likes.contains(user.uid);
-
       });
       firstTime = false;
     }
+
     return Padding(
       padding: const EdgeInsets.fromLTRB(0, 0, 0, 10.0),
       child: Material(
@@ -119,7 +125,7 @@ class _PostCardState extends State<PostCard> {
 //                      PopUp(context: context, postUser: user.uid, postId: widget.post.id);
                     },
                     icon: Icon(
-                      Icons.more_vert
+                        Icons.more_vert
                     ),
                   ),
                 ),]
@@ -228,22 +234,28 @@ class _PostCardState extends State<PostCard> {
                     ),
                   ],
                 ),
-                GestureDetector(
-                  onTap: () async{
+                IconButton(
+                  icon: saved.contains(widget.post.id)?Icon(
+                    Icons.bookmark,
+                    size: 30,
+                  ):Icon(
+                    Icons.bookmark_border,
+                    size: 30,
+                  ),
+                  onPressed: ()async{
                     await db.addSavedPost(user.uid, widget.post);
+
                     setState(() {
-                      saved.add(widget.post.id);
-                      print(saved);
+                      if(saved.contains(widget.post.id)){
+                        saved.remove(widget.post.id);
+                      }
+                      else{
+                        saved.add(widget.post.id);
+                      }
                     });
                   },
-                  child: Padding(
-                    padding: const EdgeInsets.fromLTRB(16.0,4.0,16.0,8.0),
-                    child: Icon(
-                      !saved.contains(widget.post.id)?Icons.bookmark_border:Icons.bookmark,
-                      size: 30,
-                    ),
-                  ),
                 ),
+
               ],
             ),
             GestureDetector(
@@ -251,11 +263,11 @@ class _PostCardState extends State<PostCard> {
               child: Padding(
                 padding: const EdgeInsets.fromLTRB(16.0,0,0,8.0),
                 child: Text(
-                    len==1?len.toString()+" like":len.toString()+" likes",
-                    style: TextStyle(
-                      fontWeight: FontWeight.bold,
-                      fontSize: 16,
-                    ),
+                  len==1?len.toString()+" like":len.toString()+" likes",
+                  style: TextStyle(
+                    fontWeight: FontWeight.bold,
+                    fontSize: 16,
+                  ),
                 ),
               ),
             ),
