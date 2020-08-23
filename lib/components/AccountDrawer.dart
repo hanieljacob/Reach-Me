@@ -1,4 +1,6 @@
+import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
+import 'package:provider/provider.dart';
 import 'package:reach_me/firebase_auth.dart';
 import 'package:reach_me/screens/saved.dart';
 
@@ -11,6 +13,7 @@ class _AccountDrawerState extends State<AccountDrawer> {
   AuthProvider _authProvider = AuthProvider();
   @override
   Widget build(BuildContext context) {
+    var user = Provider.of<FirebaseUser>(context);
     return Container(
       width: MediaQuery.of(context).size.width/1.5,
       child: Drawer(
@@ -26,7 +29,7 @@ class _AccountDrawerState extends State<AccountDrawer> {
               leading: Icon(Icons.bookmark_border),
               title: Text('Saved Posts'),
               onTap: () => {Navigator.push(context, MaterialPageRoute(builder: (context) =>
-              SavedPostsPage()
+              SavedPostsPage(uid: user.uid)
               ))},
             ),
             ListTile(

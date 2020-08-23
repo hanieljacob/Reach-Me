@@ -20,6 +20,7 @@ class PostCard extends StatefulWidget {
 class _PostCardState extends State<PostCard> {
   int len = 0;
   bool like = false;
+  List saved = [];
   Database db = Database();
 
   showAlertDialog(BuildContext context, String postUser, String postId) {
@@ -53,12 +54,18 @@ class _PostCardState extends State<PostCard> {
     return isLiked;
   }
 
+  void getData(String uid) async{
+    saved = await db.getSavedPostId(uid);
+    print(saved.toString()+"get post");
+  }
+
   bool firstTime = true;
 
   @override
   Widget build(BuildContext context) {
     var user = Provider.of<FirebaseUser>(context);
     List likes = [];
+    getData(user.uid);
     if(firstTime){
       print("FT: "+widget.post.likes.toString());
       setState(() {
@@ -219,14 +226,33 @@ class _PostCardState extends State<PostCard> {
                     ),
                   ],
                 ),
-                GestureDetector(
-                  onTap: (){
-                    db.addSavedPost(widget.post.uid, widget.post);
+                !saved.contains(widget.post.id)?GestureDetector(
+                  onTap: () async{
+                    await db.addSavedPost(user.uid, widget.post);
+                    setState(() {
+                      saved.add(widget.post.id);
+                      print(saved);
+                    });
                   },
                   child: Padding(
                     padding: const EdgeInsets.fromLTRB(16.0,4.0,16.0,8.0),
                     child: Icon(
                       Icons.bookmark_border,
+                      size: 30,
+                    ),
+                  ),
+                ) : GestureDetector(
+                  onTap: () async{
+                    await db.removeSavedPost(user.uid, widget.post.id);
+                    setState(() {
+                      saved.remove(widget.post.id);
+                      print(saved);
+                    });
+                  },
+                  child: Padding(
+                    padding: const EdgeInsets.fromLTRB(16.0,4.0,16.0,8.0),
+                    child: Icon(
+                      Icons.bookmark,
                       size: 30,
                     ),
                   ),

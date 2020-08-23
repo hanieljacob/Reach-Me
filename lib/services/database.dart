@@ -101,9 +101,64 @@ class Database {
   }
 
   Future addSavedPost(String uid,Post post) async{
+    Map posts = {'id':post.id,'text' : post.text,'photoUrl' : post.photoUrl,'comments': post.comments,'postTime' : post.postTime,'likes':post.likes,'username':post.username,'uid':post.uid,'userphoto': post.userphoto};
     userRef.document(uid).updateData({
-      'saved' : FieldValue.arrayUnion([post])
+      'saved' : FieldValue.arrayUnion([posts])
     });
+  }
+
+  Future removeSavedPost(String uid,String postId) async{
+    List posts = [];
+    List posts2 = [];
+    await userRef.document(uid).get().then((value) {
+      posts = value.data['saved'];
+    });
+    posts.forEach((element) {
+      if(element['id'] != postId){
+        posts2.add(element);
+      }
+    });
+    userRef.document(uid).updateData({
+      'saved' : posts2
+    });
+  }
+
+  Future getSavedPost(String uid) async{
+    List<Post> post = [];
+    List posts = [];
+    await userRef.document(uid).get().then((value) {
+      posts = value.data['saved'];
+    });
+    posts.forEach((element) {
+      post.add(
+        createNewPostData(
+            element['text'],
+            element['photoUrl'],
+            element['comments'],
+            element['likes'],
+            element['postTime'],
+            element['uid'],
+            element['userphoto'],
+            element['username'],
+            element['id']),
+        );
+    });
+    return post;
+  }
+
+  Future getSavedPostId(String uid) async{
+    List post = [];
+    List posts = [];
+    await userRef.document(uid).get().then((value) {
+      posts = value.data['saved'];
+    });
+    posts.forEach((element) {
+      post.add(
+        element['id']
+      );
+    });
+    print(post);
+    return post;
   }
 
   Post createNewPostData(
