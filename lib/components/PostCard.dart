@@ -2,16 +2,17 @@ import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/widgets.dart';
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
-import 'package:reach_me/components/popUp.dart';
 import 'package:reach_me/models/Post.dart';
 import 'package:reach_me/screens/FollowingPage.dart';
 import 'package:reach_me/screens/comments.dart';
+import 'package:reach_me/screens/saved.dart';
 import 'package:reach_me/services/database.dart';
 
 class PostCard extends StatefulWidget {
   final Post post;
   final bool accountsPage;
-  PostCard({this.post,@required this.accountsPage});
+  final Function callback;
+  PostCard({this.post,@required this.accountsPage,this.callback});
   @override
   _PostCardState createState() => _PostCardState();
 }
@@ -20,6 +21,32 @@ class _PostCardState extends State<PostCard> {
   int len = 0;
   bool like = false;
   Database db = Database();
+
+  showAlertDialog(BuildContext context, String postUser, String postId) {
+
+
+    // set up the AlertDialog
+    AlertDialog alert = AlertDialog(
+      content: ListTile(
+        title: Text(
+            'Delete'
+        ),
+        onTap:(){
+          db.deletePost(postUser, postId);
+          Navigator.of(context).pop();
+          widget.callback();
+        },
+      ),
+    );
+
+    // show the dialog
+    showDialog(
+      context: context,
+      builder: (BuildContext context) {
+        return alert;
+      },
+    );
+  }
 
   bool LikedOrNot(String uid,List likes){
     bool isLiked = likes.contains(uid);
@@ -78,7 +105,8 @@ class _PostCardState extends State<PostCard> {
                 if(widget.accountsPage)...[Padding(
                   padding: EdgeInsets.only(left: 8),
                   child: IconButton(
-                    onPressed: () async{
+                    onPressed: () {
+                      showAlertDialog(context,user.uid,widget.post.id);
 //                      PopUp(context: context, postUser: user.uid, postId: widget.post.id);
                     },
                     icon: Icon(
@@ -137,53 +165,70 @@ class _PostCardState extends State<PostCard> {
               ],
             ),
             Row(
+              mainAxisAlignment: MainAxisAlignment.spaceBetween,
               children: <Widget>[
-                Padding(
-                  padding: const EdgeInsets.fromLTRB(0,4.0,8.0,8.0),
-                  child: IconButton(
-                    icon: like?Icon(
-                      Icons.favorite,
-                      size: 30,
-                      color: Color(0xfffb3958),
-                    ):Icon(
-                      Icons.favorite_border,
-                      size: 30,
-                    ),
-                    onPressed: () async{
+                Row(
+                  children: <Widget>[
+                    Padding(
+                      padding: const EdgeInsets.fromLTRB(0,4.0,8.0,8.0),
+                      child: IconButton(
+                        icon: like?Icon(
+                          Icons.favorite,
+                          size: 30,
+                          color: Color(0xfffb3958),
+                        ):Icon(
+                          Icons.favorite_border,
+                          size: 30,
+                        ),
+                        onPressed: () async{
 //                          print(widget.post.likes);
 //                          db.likeAndUnlikePost(user.uid, widget.post.uid, widget.post.id).then((value) => setState((){
 //                            i++;
 //                            print(value);
 //                            isLiked = value;
 //                          }));
-                      likes = await db.likeAndUnlikePost(user.uid, widget.post.uid, widget.post.id);
-                      widget.post.likes = likes;
-                      setState(() {
-                        like = LikedOrNot(user.uid,likes);
-                        len = likes.length;
-                        likes.forEach((element) {
-                          print("ELEMENT: "+element);
-                        });
-                      });
-                    },
-                  ),
+                          likes = await db.likeAndUnlikePost(user.uid, widget.post.uid, widget.post.id);
+                          widget.post.likes = likes;
+                          setState(() {
+                            like = LikedOrNot(user.uid,likes);
+                            len = likes.length;
+                            likes.forEach((element) {
+                              print("ELEMENT: "+element);
+                            });
+                          });
+                        },
+                      ),
+                    ),
+                    GestureDetector(
+                      onTap: (){Navigator.push(context, MaterialPageRoute(builder: (context) => CommentsPage(postId: widget.post.id,postUser: widget.post.uid,)));},
+                      child: Padding(
+                        padding: const EdgeInsets.fromLTRB(8.0,4.0,8.0,8.0),
+                        child: Icon(
+                          Icons.comment,
+                          size: 30,
+                        ),
+                      ),
+                    ),
+
+                    Padding(
+                      padding: const EdgeInsets.fromLTRB(16.0,4.0,8.0,8.0),
+                      child: Icon(
+                        Icons.share,
+                        size: 30,
+                      ),
+                    ),
+                  ],
                 ),
                 GestureDetector(
-                  onTap: (){Navigator.push(context, MaterialPageRoute(builder: (context) => CommentsPage(postId: widget.post.id,postUser: widget.post.uid,)));},
+                  onTap: (){
+                    db.addSavedPost(widget.post.uid, widget.post);
+                  },
                   child: Padding(
-                    padding: const EdgeInsets.fromLTRB(8.0,4.0,8.0,8.0),
+                    padding: const EdgeInsets.fromLTRB(16.0,4.0,16.0,8.0),
                     child: Icon(
-                      Icons.comment,
+                      Icons.bookmark_border,
                       size: 30,
                     ),
-                  ),
-                ),
-
-                Padding(
-                  padding: const EdgeInsets.fromLTRB(16.0,4.0,8.0,8.0),
-                  child: Icon(
-                    Icons.share,
-                    size: 30,
                   ),
                 ),
               ],

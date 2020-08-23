@@ -22,6 +22,7 @@ class Database {
     List following,
     List requests,
     List requested,
+      List saved
   ) {
     return User(
       name: name,
@@ -32,6 +33,7 @@ class Database {
       following: following,
       requests: requests,
       requested: requested,
+      saved: saved,
     );
   }
 
@@ -46,6 +48,7 @@ class Database {
         'following': [],
         'requests': [],
         'requested': [],
+        'saved' : [],
       });
     }
   }
@@ -65,6 +68,7 @@ class Database {
             element.data['following'],
             element.data['requests'],
             element.data['requested'],
+            element.data['saved'],
           ),
         );
       }
@@ -89,10 +93,17 @@ class Database {
           element.data['following'],
           element.data['requests'],
           element.data['requested'],
+          element.data['saved'],
         );
       }
     });
     return user;
+  }
+
+  Future addSavedPost(String uid,Post post) async{
+    userRef.document(uid).updateData({
+      'saved' : FieldValue.arrayUnion([post])
+    });
   }
 
   Post createNewPostData(
@@ -315,6 +326,7 @@ class Database {
             element.data['following'],
             element.data['requests'],
             element.data['requested'],
+            element.data['saved'],
           ),
         );
       }
@@ -394,6 +406,7 @@ class Database {
           element.data['following'],
           element.data['requests'],
           element.data['requested'],
+          element.data['saved'],
         ),
       );
     });
@@ -420,6 +433,7 @@ class Database {
           element.data['following'],
           element.data['requests'],
           element.data['requested'],
+          element.data['saved'],
         ),
       );
     });

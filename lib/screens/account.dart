@@ -1,6 +1,7 @@
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
+import 'package:reach_me/components/AccountDrawer.dart';
 import 'package:reach_me/components/PostCard.dart';
 import 'package:reach_me/models/Post.dart';
 import '../components/loading.dart';
@@ -28,26 +29,19 @@ class _SettingsPageState extends State<SettingsPage> {
   String uid;
   Database db = Database();
   bool firstime = true;
+  bool loading = true;
 
   List<Post> post = [];
 
-  void getposts(String uid) {
-    getPostUrl(uid).then(
-      (value) => setState(
-        () {
-          userData = value;
-          // print(userData);
-          userData.posts.forEach(
-            (element) {
-              postsUrl.add(element['photoUrl']);
-              text.add(element['text']);
-            },
-          );
-        },
-      ),
-    );
-    db.userPostData(uid).then((value) => setState(() {
+  void getposts(String uid) async{
+    post = [];
+    await db.getUser(uid).then((value) => setState((){
+      userData = value;
+      print(userData);
+    }));
+    await db.userPostData(uid).then((value) => setState(() {
           post = value;
+          print(value);
         }));
   }
 
@@ -67,13 +61,14 @@ class _SettingsPageState extends State<SettingsPage> {
     return _selectedIndex == 4
         ? SafeArea(
             child: Scaffold(
+              endDrawer: AccountDrawer(),
               body: userData == null
                   ? Loading()
                   : CustomScrollView(
                       slivers: <Widget>[
                         ProfileSliverAppBar(
                           user: userData,
-                          posts: userData == null ? 0 : userData.posts.length,
+                          posts: userData == null ? 0 : post.length,
                           followers:
                               userData == null ? 0 : userData.followers.length,
                           following:
@@ -90,7 +85,10 @@ class _SettingsPageState extends State<SettingsPage> {
                                         'Oops! Looks like you havent posted anything yet.'),
                                   ))
                                 : PostCard(
-                                    post: post[index],accountsPage: true,
+                                    post: post[index],accountsPage: true, callback:(){ setState(() {
+                                      getposts(uid);
+                                    });
+                            },
                                   );
                           }, childCount: post.length == 0 ? 1 : post.length),
                         )

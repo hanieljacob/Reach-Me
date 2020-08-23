@@ -7,6 +7,7 @@ class User {
   List following;
   List requests;
   List requested;
+  List saved;
   User({
     this.name,
     this.photoUrl,
@@ -16,5 +17,6 @@ class User {
     this.following,
     this.requests,
     this.requested,
+    this.saved,
   });
 }
