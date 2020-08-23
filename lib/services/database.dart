@@ -459,7 +459,7 @@ class Database {
     });
   }
 
-  Future getComments(String postUser,postID) async{
+  Future getComments(String postUser,String postID) async{
     List post = [];
     List comments = [];
     post = await getPosts(postUser);
@@ -468,7 +468,62 @@ class Database {
         comments = element['comments'];
       }
     });
+    print(comments);
     return comments;
+  }
+
+  String convertTime(Timestamp timestamp) {
+    Timestamp currentTimestamp = Timestamp.now();
+    int diff = currentTimestamp.millisecondsSinceEpoch -
+        timestamp.millisecondsSinceEpoch;
+    double diff1;
+    String time;
+    if (diff > 60000 * 60 * 24 * 365) {
+      diff1 = diff / (60000 * 60 * 24 * 365);
+      if (diff1.toStringAsFixed(0) == "1") {
+        time = diff1.toStringAsFixed(0) + " year ago";
+      } else
+        time = diff1.toStringAsFixed(0) + " years ago";
+    } else if (diff > 60000 * 60 * 24) {
+      diff1 = diff / (60000 * 60 * 24);
+      if (diff1.toStringAsFixed(0) == "1") {
+        time = diff1.toStringAsFixed(0) + " day ago";
+      } else
+        time = diff1.toStringAsFixed(0) + " days ago";
+    } else if (diff >= 60000 * 60) {
+      diff1 = diff / (60000 * 60);
+      if (diff1.toStringAsFixed(0) == "1") {
+        time = diff1.toStringAsFixed(0) + " hour ago";
+      } else
+        time = diff1.toStringAsFixed(0) + " hours ago";
+    } else if (diff >= 60000) {
+      diff1 = diff / 60000;
+      if (diff1.toStringAsFixed(0) == "1") {
+        time = diff1.toStringAsFixed(0) + " minute ago";
+      } else
+        time = diff1.toStringAsFixed(0) + " minutes ago";
+    } else {
+      diff1 = diff / 1000;
+      if (diff1.toStringAsFixed(0) == "1") {
+        time = diff1.toStringAsFixed(0) + " second ago";
+      } else
+        time = diff1.toStringAsFixed(0) + " seconds ago";
+    }
+    return (time);
+  }
+
+  Future deletePost(String postUser, String postId) async{
+    List posts = [];
+    List posts2 = [];
+    posts = await getPosts(postUser);
+    posts.forEach((element) {
+      if(postId != element['id']){
+         posts2.add(element);
+      }
+    });
+    userRef.document(postUser).updateData({
+      'posts' : posts2
+    });
   }
 
   Future addFollowerAndFollowing(String curUser, String reqUser) async {

@@ -90,7 +90,7 @@ class _SettingsPageState extends State<SettingsPage> {
                                         'Oops! Looks like you havent posted anything yet.'),
                                   ))
                                 : PostCard(
-                                    post: post[index],
+                                    post: post[index],accountsPage: true,
                                   );
                           }, childCount: post.length == 0 ? 1 : post.length),
                         )

@@ -1,8 +1,8 @@
-import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/widgets.dart';
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
+import 'package:reach_me/components/popUp.dart';
 import 'package:reach_me/models/Post.dart';
 import 'package:reach_me/screens/FollowingPage.dart';
 import 'package:reach_me/screens/comments.dart';
@@ -10,8 +10,8 @@ import 'package:reach_me/services/database.dart';
 
 class PostCard extends StatefulWidget {
   final Post post;
-  final Function callBack;
-  PostCard({this.post,this.callBack});
+  final bool accountsPage;
+  PostCard({this.post,@required this.accountsPage});
   @override
   _PostCardState createState() => _PostCardState();
 }
@@ -20,45 +20,7 @@ class _PostCardState extends State<PostCard> {
   int len = 0;
   bool like = false;
   Database db = Database();
-  String convertTime(Timestamp timestamp) {
-    Timestamp currentTimestamp = Timestamp.now();
-    int diff = currentTimestamp.millisecondsSinceEpoch -
-        timestamp.millisecondsSinceEpoch;
-    double diff1;
-    String time;
-    if (diff > 60000 * 60 * 24 * 365) {
-      diff1 = diff / (60000 * 60 * 24 * 365);
-      if (diff1.toStringAsFixed(0) == "1") {
-        time = diff1.toStringAsFixed(0) + " year ago";
-      } else
-        time = diff1.toStringAsFixed(0) + " years ago";
-    } else if (diff > 60000 * 60 * 24) {
-      diff1 = diff / (60000 * 60 * 24);
-      if (diff1.toStringAsFixed(0) == "1") {
-        time = diff1.toStringAsFixed(0) + " day ago";
-      } else
-        time = diff1.toStringAsFixed(0) + " days ago";
-    } else if (diff >= 60000 * 60) {
-      diff1 = diff / (60000 * 60);
-      if (diff1.toStringAsFixed(0) == "1") {
-        time = diff1.toStringAsFixed(0) + " hour ago";
-      } else
-        time = diff1.toStringAsFixed(0) + " hours ago";
-    } else if (diff >= 60000) {
-      diff1 = diff / 60000;
-      if (diff1.toStringAsFixed(0) == "1") {
-        time = diff1.toStringAsFixed(0) + " minute ago";
-      } else
-        time = diff1.toStringAsFixed(0) + " minutes ago";
-    } else {
-      diff1 = diff / 1000;
-      if (diff1.toStringAsFixed(0) == "1") {
-        time = diff1.toStringAsFixed(0) + " second ago";
-      } else
-        time = diff1.toStringAsFixed(0) + " seconds ago";
-    }
-    return (time);
-  }
+
   bool LikedOrNot(String uid,List likes){
     bool isLiked = likes.contains(uid);
     return isLiked;
@@ -68,10 +30,8 @@ class _PostCardState extends State<PostCard> {
 
   @override
   Widget build(BuildContext context) {
-
     var user = Provider.of<FirebaseUser>(context);
     List likes = [];
-
     if(firstTime){
       print("FT: "+widget.post.likes.toString());
       setState(() {
@@ -115,6 +75,17 @@ class _PostCardState extends State<PostCard> {
                     ),
                   ),
                 ),
+                if(widget.accountsPage)...[Padding(
+                  padding: EdgeInsets.only(left: 8),
+                  child: IconButton(
+                    onPressed: () async{
+//                      PopUp(context: context, postUser: user.uid, postId: widget.post.id);
+                    },
+                    icon: Icon(
+                      Icons.more_vert
+                    ),
+                  ),
+                ),]
               ],
             ),
             Padding(
@@ -233,7 +204,7 @@ class _PostCardState extends State<PostCard> {
             Padding(
               padding: const EdgeInsets.fromLTRB(16.0,8.0,0,8.0),
               child: Text(
-                convertTime(widget.post.postTime),
+                db.convertTime(widget.post.postTime),
               ),
             ),
           ],
