@@ -21,6 +21,7 @@ class _PostCardState extends State<PostCard> {
   int len = 0;
   bool like = false;
   List saved = [];
+  bool save = false;
   Database db = Database();
 
   showAlertDialog(BuildContext context, String postUser, String postId) {
@@ -71,6 +72,7 @@ class _PostCardState extends State<PostCard> {
       setState(() {
         len = widget.post.likes.length;
         like = widget.post.likes.contains(user.uid);
+
       });
       firstTime = false;
     }
@@ -226,7 +228,7 @@ class _PostCardState extends State<PostCard> {
                     ),
                   ],
                 ),
-                !saved.contains(widget.post.id)?GestureDetector(
+                GestureDetector(
                   onTap: () async{
                     await db.addSavedPost(user.uid, widget.post);
                     setState(() {
@@ -237,22 +239,7 @@ class _PostCardState extends State<PostCard> {
                   child: Padding(
                     padding: const EdgeInsets.fromLTRB(16.0,4.0,16.0,8.0),
                     child: Icon(
-                      Icons.bookmark_border,
-                      size: 30,
-                    ),
-                  ),
-                ) : GestureDetector(
-                  onTap: () async{
-                    await db.removeSavedPost(user.uid, widget.post.id);
-                    setState(() {
-                      saved.remove(widget.post.id);
-                      print(saved);
-                    });
-                  },
-                  child: Padding(
-                    padding: const EdgeInsets.fromLTRB(16.0,4.0,16.0,8.0),
-                    child: Icon(
-                      Icons.bookmark,
+                      !saved.contains(widget.post.id)?Icons.bookmark_border:Icons.bookmark,
                       size: 30,
                     ),
                   ),

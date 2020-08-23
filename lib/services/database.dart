@@ -101,9 +101,16 @@ class Database {
   }
 
   Future addSavedPost(String uid,Post post) async{
+    List saved = [];
     Map posts = {'id':post.id,'text' : post.text,'photoUrl' : post.photoUrl,'comments': post.comments,'postTime' : post.postTime,'likes':post.likes,'username':post.username,'uid':post.uid,'userphoto': post.userphoto};
-    userRef.document(uid).updateData({
-      'saved' : FieldValue.arrayUnion([posts])
+    userRef.document(uid).get().then((value) {
+      saved = value.data['saved'];
+      if(saved.contains(post.id))
+        userRef.document(uid).updateData({
+          'saved' : FieldValue.arrayUnion([posts])
+        });
+      else
+        removeSavedPost(uid, post.id);
     });
   }
 
