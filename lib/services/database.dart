@@ -79,7 +79,7 @@ class Database {
     return users;
   }
 
-  Future getUser(var userUid) async {
+  Future<User> getUser(var userUid) async {
     User user;
     var result = await userRef.getDocuments();
     result.documents.forEach((element) {

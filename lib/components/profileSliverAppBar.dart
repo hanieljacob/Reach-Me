@@ -2,16 +2,23 @@ import 'package:flutter/material.dart';
 import 'package:reach_me/models/User.dart';
 import 'package:reach_me/screens/FollowersPage.dart';
 import 'package:reach_me/screens/FollowingPage.dart';
+import 'package:reach_me/services/database.dart';
 
 class ProfileSliverAppBar extends StatefulWidget {
   final int followers;
   final int following;
   final int posts;
+  final bool isAccount;
+  final User curUser;
+  final Function reload;
   const ProfileSliverAppBar({
     @required this.user,
     this.posts,
     this.followers,
     this.following,
+    this.isAccount,
+    this.curUser,
+    this.reload,
   });
 
   final User user;
@@ -21,10 +28,56 @@ class ProfileSliverAppBar extends StatefulWidget {
 }
 
 class _ProfileSliverAppBarState extends State<ProfileSliverAppBar> {
+  Database db = Database();
   bool firstTime = true;
+  User user2;
+  void getData(String uid){
+    db.getUser(uid).then((value) {
+      setState(() {
+        user2 = value;
+      });
+    });
+  }
+
+  Widget follow(){
+    return user2.followers
+        .contains(widget.curUser.uid)
+        ? FlatButton(
+      textColor: Colors.white,
+      color: Colors.blueGrey[300],
+      child: Text('Reached Out'),
+      onPressed: () {},
+    )
+        : user2.requests.contains(widget.curUser.uid)
+        ? FlatButton(
+      textColor: Colors.blue,
+      color: Colors.white,
+      child: Text('Reaching..'),
+      onPressed: () {},
+    )
+        : FlatButton(
+      textColor: Colors.white,
+      color: Colors.blue,
+      child: Text('Reach Out!'),
+      onPressed: () {
+        db.createRequest(
+            widget.curUser.uid, widget.user.uid);
+        getData(widget.user.uid);
+      },
+    );
+  }
+
   @override
   Widget build(BuildContext context) {
+    if(firstTime){
+      user2 = widget.user;
+      firstTime = false;
+    }
     return SliverAppBar(
+      actions: <Widget>[
+        if(!widget.isAccount)
+          follow()
+      ],
       title: Text('Profile'),
       backgroundColor: Colors.blue,
       expandedHeight: 275.0,
@@ -45,7 +98,7 @@ class _ProfileSliverAppBarState extends State<ProfileSliverAppBar> {
               ),
               Center(
                 child: Text(
-                  'Hello, ' + widget.user.name,
+                  widget.isAccount?'Hello, ' + widget.user.name : widget.user.name,
                   style: TextStyle(
                     fontWeight: FontWeight.bold,
                     color: Colors.white,

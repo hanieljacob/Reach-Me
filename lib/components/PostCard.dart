@@ -3,8 +3,11 @@ import 'package:flutter/widgets.dart';
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import 'package:reach_me/models/Post.dart';
+import 'package:reach_me/models/User.dart';
 import 'package:reach_me/screens/FollowingPage.dart';
+import 'package:reach_me/screens/account.dart';
 import 'package:reach_me/screens/comments.dart';
+import 'package:reach_me/screens/profile.dart';
 
 import 'package:reach_me/services/database.dart';
 
@@ -21,6 +24,7 @@ class _PostCardState extends State<PostCard> {
   int len = 0;
   bool like = false;
   List saved = [];
+  User currentUser;
 
   Database db = Database();
 
@@ -56,7 +60,16 @@ class _PostCardState extends State<PostCard> {
   }
 
   void getData(String uid)async {
-    await db.getSavedPostId(uid).then((value) => setState((){saved=value;}));
+    List users2 = [];
+    await db.getUser(uid).then((User value) {
+      value.saved.forEach((element) {
+        users2.add(element['id']);
+      });
+      setState(() {
+      currentUser = value;
+      saved = users2;
+    });});
+//    await db.getSavedPostId(uid).then((value) => setState((){saved=value;}));
   }
 
 
@@ -94,27 +107,40 @@ class _PostCardState extends State<PostCard> {
           crossAxisAlignment: CrossAxisAlignment.start,
           children: <Widget>[
             Row(
+              mainAxisAlignment: MainAxisAlignment.spaceBetween,
               children: <Widget>[
-                Padding(
-                  padding: const EdgeInsets.all(8.0),
-                  child: CircleAvatar(
-                    radius: 20,
-                    child: ClipOval(
-                      child: Image.network(
-                        widget.post.userphoto,
+                GestureDetector(
+                  onTap: (){
+                    if(widget.post.uid != currentUser.uid)
+                      Navigator.push(context, MaterialPageRoute(builder: (context) => ProfilePage(uid: widget.post.uid,  user: currentUser,)));
+                    else
+                      Navigator.push(context, MaterialPageRoute(builder: (context) => SettingsPage(index: 4,)));
+                  },
+                  child: Row(
+                    children: <Widget>[
+                      Padding(
+                        padding: const EdgeInsets.all(8.0),
+                        child: CircleAvatar(
+                          radius: 20,
+                          child: ClipOval(
+                            child: Image.network(
+                              widget.post.userphoto,
+                            ),
+                          ),
+                          // backgroundImage: NetworkImage(user.photoUrl),
+                          backgroundColor: Colors.transparent,
+                        ),
                       ),
-                    ),
-                    // backgroundImage: NetworkImage(user.photoUrl),
-                    backgroundColor: Colors.transparent,
-                  ),
-                ),
-                Padding(
-                  padding: const EdgeInsets.fromLTRB(8.0,0,0,0),
-                  child: Text(
-                    widget.post.username,
-                    style: TextStyle(
-                      fontWeight: FontWeight.bold,
-                    ),
+                      Padding(
+                        padding: const EdgeInsets.fromLTRB(8.0,0,0,0),
+                        child: Text(
+                          widget.post.username,
+                          style: TextStyle(
+                            fontWeight: FontWeight.bold,
+                          ),
+                        ),
+                      ),
+                    ],
                   ),
                 ),
                 if(widget.accountsPage)...[Padding(

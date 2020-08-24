@@ -2,6 +2,8 @@
 import 'package:flutter/material.dart';
 // import 'package:provider/provider.dart';
 import 'package:reach_me/models/User.dart';
+import 'package:reach_me/screens/account.dart';
+import 'package:reach_me/screens/profile.dart';
 import '../services/database.dart';
 
 class UsersList extends StatefulWidget {
@@ -58,7 +60,13 @@ class _UsersListState extends State<UsersList> {
                 horizontal: 5,
               ),
               child: ListTile(
-                onTap: () {},
+                onTap: () {
+                  Navigator.push(context, MaterialPageRoute(builder: (context) => ProfilePage(uid: widget.users[index].uid,  user: widget.curUser,))).then((value) {
+                    setState(() {
+                      search();
+                    });
+                  });
+                },
                 leading: CircleAvatar(
                   backgroundImage: NetworkImage(widget.users[index].photoUrl),
                 ),
