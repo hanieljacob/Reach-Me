@@ -32,17 +32,20 @@ class _SettingsPageState extends State<SettingsPage> {
   bool loading = true;
 
   List<Post> post = [];
+  List saved = [];
 
-  void getposts(String uid) async{
+  void getposts(String uid) async {
     post = [];
-    await db.getUser(uid).then((value) => setState((){
+    await db.getUser(uid).then((value) => setState(() {
       userData = value;
       print(userData);
+      db.getSavedPostId(uid).then((value) => saved=value);
     }));
     await db.userPostData(uid).then((value) => setState(() {
-          post = value;
-          print(value);
-        }));
+      post = value;
+      print(value);
+    }));
+
   }
 
   Future getPostUrl(String uid) async {
@@ -60,56 +63,60 @@ class _SettingsPageState extends State<SettingsPage> {
     }
     return _selectedIndex == 4
         ? SafeArea(
-            child: Scaffold(
-              endDrawer: AccountDrawer(),
-              body: userData == null
-                  ? Loading()
-                  : CustomScrollView(
-                      slivers: <Widget>[
-                        ProfileSliverAppBar(
-                          user: userData,
-                          posts: userData == null ? 0 : post.length,
-                          followers:
-                              userData == null ? 0 : userData.followers.length,
-                          following:
-                              userData == null ? 0 : userData.following.length,
-                        ),
-                        SliverList(
-                          delegate: SliverChildBuilderDelegate(
-                              (BuildContext context, int index) {
-                            return post.length == 0
-                                ? Center(
-                                    child: Padding(
-                                    padding: const EdgeInsets.only(top: 40.0),
-                                    child: Text(
-                                        'Oops! Looks like you havent posted anything yet.'),
-                                  ))
-                                : PostCard(
-                                    post: post[index],accountsPage: true, callback:(){ setState(() {
-                                      getposts(uid);
-                                    });
-                            },
-                                  );
-                          }, childCount: post.length == 0 ? 1 : post.length),
-                        )
-                      ],
-                    ),
+      child: Scaffold(
+        endDrawer: AccountDrawer(),
+        body: userData == null
+            ? Loading()
+            : CustomScrollView(
+          slivers: <Widget>[
+            ProfileSliverAppBar(
+              user: userData,
+              posts: userData == null ? 0 : post.length,
+              followers:
+              userData == null ? 0 : userData.followers.length,
+              following:
+              userData == null ? 0 : userData.following.length,
             ),
-          )
+            SliverList(
+              delegate: SliverChildBuilderDelegate(
+                      (BuildContext context, int index) {
+                    return post.length == 0
+                        ? Center(
+                        child: Padding(
+                          padding: const EdgeInsets.only(top: 40.0),
+                          child: Text(
+                              'Oops! Looks like you havent posted anything yet.'),
+                        ))
+                        : PostCard(
+                      saved1: saved,
+                      post: post[index],
+                      accountsPage: true,
+                      callback: () {
+                        setState(() {
+                          getposts(uid);
+                        });
+                      },
+                    );
+                  }, childCount: post.length == 0 ? 1 : post.length),
+            )
+          ],
+        ),
+      ),
+    )
         : _selectedIndex == 0
-            ? HomePage(
-                index: widget.index,
-              )
-            : _selectedIndex == 1
-                ? SearchPage(
-                    index: widget.index,
-                  )
-                : _selectedIndex == 2
-                    ? PostPage(
-                        index: widget.index,
-                      )
-                    : NotificationsPage(
-                        index: widget.index,
-                      );
+        ? HomePage(
+      index: widget.index,
+    )
+        : _selectedIndex == 1
+        ? SearchPage(
+      index: widget.index,
+    )
+        : _selectedIndex == 2
+        ? PostPage(
+      index: widget.index,
+    )
+        : NotificationsPage(
+      index: widget.index,
+    );
   }
 }

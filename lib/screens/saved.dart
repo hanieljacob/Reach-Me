@@ -13,14 +13,18 @@ class SavedPostsPage extends StatefulWidget {
 class _SavedPostsPageState extends State<SavedPostsPage> {
   Database db = Database();
   List<Post> posts = [];
+  List saved = [];
   @override
   void initState() {
     super.initState();
     getSavedPosts(widget.uid);
   }
 
-  void getSavedPosts(String uid){
-    db.getSavedPost(uid).then((value) => setState((){
+  void getSavedPosts(String uid) {
+    db.getSavedPostId(uid).then((value) => setState(() {
+      saved = value;
+    }));
+    db.getSavedPost(uid).then((value) => setState(() {
       posts = value;
     }));
   }
@@ -29,27 +33,26 @@ class _SavedPostsPageState extends State<SavedPostsPage> {
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
-        title: Text(
-          'Saved Posts'
-        ),
+        title: Text('Saved Posts'),
       ),
       body: CustomScrollView(
         slivers: <Widget>[
           SliverList(
-            delegate: SliverChildBuilderDelegate(
-                    (BuildContext context, int index) {
-                  return posts.length == 0
-                      ? Center(
-                    child: Padding(
-                      padding: const EdgeInsets.only(top: 40.0),
-                      child: Text('No Post'),
-                    ),
-                  )
-                      : PostCard(
-                    post: posts[index],
-                    accountsPage: false,
-                  );
-                }, childCount: posts.length == 0 ? 1 : posts.length),
+            delegate:
+            SliverChildBuilderDelegate((BuildContext context, int index) {
+              return posts.length == 0
+                  ? Center(
+                child: Padding(
+                  padding: const EdgeInsets.only(top: 40.0),
+                  child: Text('No Post'),
+                ),
+              )
+                  : PostCard(
+                saved1: saved,
+                post: posts[index],
+                accountsPage: false,
+              );
+            }, childCount: posts.length == 0 ? 1 : posts.length),
           )
         ],
       ),

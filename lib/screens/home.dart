@@ -23,21 +23,26 @@ class HomePage extends StatefulWidget {
 class _HomePageState extends State<HomePage> {
   List<Post> post = [];
   int _selectedIndex = 0;
+  List saved = [];
   String uid;
   bool firstTime = true;
   Database db = Database();
   AuthProvider _authProvider = AuthProvider();
 
   void reload(String uid) {
+
     db.getPostData(uid).then((value) => setState(() {
-          post = value;
-          print(value.toString() + 'hello');
-        }));
+      post = value;
+      print(value.toString() + 'hello');
+
+    }));
+    db.getSavedPostId(uid).then((value) =>setState((){saved=value;}));
+
   }
 
   Future<String> refresh(String uid) async {
     //url = await Receive().getData();
-//    print("Refresh "+url);
+//    print("Refresh "+url)
     return await Receive().getData(uid);
   }
 
@@ -52,71 +57,72 @@ class _HomePageState extends State<HomePage> {
     }
     return _selectedIndex == 0
         ? Scaffold(
-            backgroundColor: Colors.grey[100],
-            appBar: AppBar(
-              leading: IconButton(
-                onPressed: () {
-                  reload(user.uid);
-                },
-                icon: Icon(
-                  Icons.public,
-                  color: Colors.white,
-                ),
-              ),
-              title: Center(child: Text("ReachMe")),
-              actions: <Widget>[
-                IconButton(
-                  onPressed: () {
-                    _authProvider.logout();
-                  },
-                  icon: Icon(
-                    Icons.send,
-                    color: Colors.white,
-                  ),
-                ),
-              ],
+      backgroundColor: Colors.grey[100],
+      appBar: AppBar(
+        leading: IconButton(
+          onPressed: () {
+            reload(user.uid);
+          },
+          icon: Icon(
+            Icons.public,
+            color: Colors.white,
+          ),
+        ),
+        title: Center(child: Text("ReachMe")),
+        actions: <Widget>[
+          IconButton(
+            onPressed: () {
+              _authProvider.logout();
+            },
+            icon: Icon(
+              Icons.send,
+              color: Colors.white,
             ),
-            body: RefreshIndicator(
-              onRefresh: () async {
-                reload(user.uid);
-                return await Future.delayed(Duration(seconds: 2));
-              },
-              child: CustomScrollView(
-                slivers: <Widget>[
-                  SliverList(
-                    delegate: SliverChildBuilderDelegate(
-                        (BuildContext context, int index) {
-                      return post.length == 0
-                          ? Center(
-                              child: Padding(
-                                padding: const EdgeInsets.only(top: 40.0),
-                                child: Text('No Post'),
-                              ),
-                            )
-                          : PostCard(
-                              post: post[index],
-                            accountsPage: false,
-                            );
-                    }, childCount: post.length == 0 ? 1 : post.length),
-                  )
-                ],
-              ),
-            ),
-          )
+          ),
+        ],
+      ),
+      body: RefreshIndicator(
+        onRefresh: () async {
+          reload(user.uid);
+          return await Future.delayed(Duration(seconds: 2));
+        },
+        child: CustomScrollView(
+          slivers: <Widget>[
+            SliverList(
+              delegate: SliverChildBuilderDelegate(
+                      (BuildContext context, int index) {
+                    return post.length == 0
+                        ? Center(
+                      child: Padding(
+                        padding: const EdgeInsets.only(top: 40.0),
+                        child: Text('No Post'),
+                      ),
+                    )
+                        : PostCard(
+                      saved1: saved,
+                      post: post[index],
+                      accountsPage: false,
+                    );
+                  }, childCount: post.length == 0 ? 1 : post.length),
+            )
+          ],
+        ),
+      ),
+    )
         : _selectedIndex == 1
-            ? SearchPage(
-                index: widget.index,
-              )
-            : _selectedIndex == 2
-                ? PostPage(
-                    index: widget.index,
-                  )
-                : _selectedIndex == 3
-                    ? NotificationsPage(
-                        index: widget.index,
-                      )
-                    : SettingsPage(
-                        index: widget.index,
-                      );
+        ? SearchPage(
+      index: widget.index,
+    )
+        : _selectedIndex == 2
+        ? PostPage(
+      index: widget.index,
+    )
+        : _selectedIndex == 3
+        ? NotificationsPage(
+      index: widget.index,
+    )
+        : SettingsPage(
+      index: widget.index,
+    );
   }
 }
