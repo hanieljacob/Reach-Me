@@ -4,6 +4,8 @@ import 'package:reach_me/components/PostCard.dart';
 import 'package:reach_me/firebase_auth.dart';
 import 'package:flutter/material.dart';
 import 'package:reach_me/models/Post.dart';
+import 'package:reach_me/models/User.dart';
+import 'package:reach_me/screens/chat.dart';
 import 'search.dart';
 import 'post.dart';
 import 'notifications.dart';
@@ -24,21 +26,17 @@ class _HomePageState extends State<HomePage> {
   List<Post> post = [];
   int _selectedIndex = 0;
   String uid;
+  User user2;
   bool firstTime = true;
   Database db = Database();
   AuthProvider _authProvider = AuthProvider();
 
   void reload(String uid) {
+    db.getUser(uid).then((value) => user2 = value);
     db.getPostData(uid).then((value) => setState(() {
           post = value;
           print(value.toString() + 'hello');
         }));
-  }
-
-  Future<String> refresh(String uid) async {
-    //url = await Receive().getData();
-//    print("Refresh "+url);
-    return await Receive().getData(uid);
   }
 
   @override
@@ -47,7 +45,7 @@ class _HomePageState extends State<HomePage> {
     var user = Provider.of<FirebaseUser>(context);
     if (firstTime) {
       print("Hello There");
-      reload(user.uid);
+      reload(user.uid, );
       firstTime = false;
     }
     return _selectedIndex == 0
@@ -67,7 +65,7 @@ class _HomePageState extends State<HomePage> {
               actions: <Widget>[
                 IconButton(
                   onPressed: () {
-                    _authProvider.logout();
+                    Navigator.push(context, MaterialPageRoute(builder: (context) => ChatPage(uid: user.uid, user: user2)));
                   },
                   icon: Icon(
                     Icons.send,

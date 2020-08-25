@@ -63,7 +63,7 @@ class _UsersListState extends State<UsersList> {
                 onTap: () {
                   Navigator.push(context, MaterialPageRoute(builder: (context) => ProfilePage(uid: widget.users[index].uid,  user: widget.curUser,))).then((value) {
                     setState(() {
-                      search();
+                      widget.rebuild();
                     });
                   });
                 },

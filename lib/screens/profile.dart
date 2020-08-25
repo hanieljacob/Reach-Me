@@ -87,7 +87,7 @@ class _ProfilePageState extends State<ProfilePage> {
                               'Oops! Looks like you havent posted anything yet.'),
                         ))
                         : PostCard(
-                      post: post[index], accountsPage: true, callback: () {
+                      post: post[index], accountsPage: false, callback: () {
                       setState(() {
                         getposts(widget.uid);
                       });

@@ -2,12 +2,14 @@ import 'dart:math';
 
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:firebase_auth/firebase_auth.dart';
+import 'package:reach_me/models/Message.dart';
 
 import 'package:reach_me/models/Post.dart';
 import '../models/User.dart';
 
 class Database {
   CollectionReference userRef = Firestore.instance.collection("Users");
+  CollectionReference msgRef = Firestore.instance.collection("Messages");
   var _chars = 'AaBbCcDdEeFfGgHhIiJjKkLlMmNnOoPpQqRrSsTtUuVvWwXxYyZz1234567890';
   Random _rnd = Random();
   String getRandomString(int length) => String.fromCharCodes(Iterable.generate(
@@ -650,4 +652,36 @@ class Database {
       'followers': FieldValue.arrayRemove([curUser])
     });
   }
+
+  Message createMessage(String content, String fromUid, String toUid, String time, int type){
+    return Message(content: content,fromUid: fromUid,time: time,toUid: toUid,type: type);
+  }
+
+  Future sendMessage(String fromUid, String toUid, String content, int type) async{
+    Map message = {
+      'content' : content,
+      'fromUid' : fromUid,
+      'toUid' : toUid,
+      'time' : Timestamp.now().millisecondsSinceEpoch.toString(),
+      'type' : type,
+    };
+    if( await msgRef.document("$fromUid-$toUid").get().then((value) => !value.exists))
+    msgRef.document("$fromUid-$toUid").collection("$fromUid-$toUid").document(message['time']).setData({
+      'content' : content,
+      'fromUid' : fromUid,
+      'toUid' : toUid,
+      'time' : Timestamp.now().millisecondsSinceEpoch.toString(),
+      'type' : type,
+    });
+    else
+      msgRef.document("$fromUid-$toUid").collection("$fromUid-$toUid").document(message['time']).updateData({
+        'content' : content,
+        'fromUid' : fromUid,
+        'toUid' : toUid,
+        'time' : Timestamp.now().millisecondsSinceEpoch.toString(),
+        'type' : type,
+      });
+    print(message);
+  }
+
 }

@@ -138,6 +138,7 @@ class _ProfileSliverAppBarState extends State<ProfileSliverAppBar> {
                   ),
                   GestureDetector(
                     onTap: () {
+                      if(widget.isAccount)
                       Navigator.push(
                           context,
                           MaterialPageRoute(
@@ -175,6 +176,7 @@ class _ProfileSliverAppBarState extends State<ProfileSliverAppBar> {
                   ),
                   GestureDetector(
                     onTap: () {
+                      if(widget.isAccount)
                       Navigator.push(
                           context,
                           MaterialPageRoute(

@@ -37,6 +37,11 @@ class _FollowersPageState extends State<FollowersPage> {
       firstTime = false;
     }
     return Scaffold(
+      appBar: AppBar(
+        title: Text(
+          'Followers'
+        ),
+      ),
       body:  ListView.builder(itemCount: widget.followers.length,itemBuilder: (BuildContext context,int index){
         return followers.length==0?SizedBox.shrink():boolList[index]?ListTile(
           onTap: () {},
