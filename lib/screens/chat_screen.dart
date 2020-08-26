@@ -15,7 +15,7 @@ class ChatScreen extends StatefulWidget {
 class _ChatScreenState extends State<ChatScreen> {
   Database db = Database();
   User user2;
-  TextEditingController _controller;
+  TextEditingController _controller = TextEditingController();
   String text;
   List messages = [];
   String chatId;
@@ -58,9 +58,43 @@ class _ChatScreenState extends State<ChatScreen> {
                     SliverList(
                       delegate: SliverChildBuilderDelegate(
                               (BuildContext context, int index){
-                            return ListTile(
-                              title: Text(snapshot.data.documents[index]['content']),
-                            );
+                                var doc = snapshot.data.documents[index];
+                           if(doc['fromUid'] != widget.user.uid)
+                             return Row(
+                               mainAxisAlignment: MainAxisAlignment.start,
+                               children: <Widget>[
+                                 Padding(
+                                   padding: const EdgeInsets.all(8.0),
+                                   child: Container(
+                                     constraints: BoxConstraints(maxWidth: 200, ),
+                                     child: Text(
+                                       doc['content'],
+                                       style: TextStyle(color: Colors.blue),
+                                     ),
+                                     padding: EdgeInsets.fromLTRB(15.0, 10.0, 15.0, 10.0),
+                                     decoration: BoxDecoration(color: Colors.transparent, borderRadius: BorderRadius.circular(8.0), border: Border.all(color: Colors.blue)),
+                                   ),
+                                 )
+                               ],
+                             );
+                           else
+                             return Row(
+                               mainAxisAlignment: MainAxisAlignment.end,
+                               children: <Widget>[
+                                 Padding(
+                                   padding: const EdgeInsets.all(8.0),
+                                   child: Container(
+                                     constraints: BoxConstraints(maxWidth: 200, ),
+                                     child: Text(
+                                       doc['content'],
+                                       style: TextStyle(color: Colors.white),
+                                     ),
+                                     padding: EdgeInsets.fromLTRB(15.0, 10.0, 15.0, 10.0),
+                                     decoration: BoxDecoration(color: Colors.blue, borderRadius: BorderRadius.circular(8.0)),
+                                   ),
+                                 )
+                               ],
+                             );
                           },
                           childCount: snapshot.data.documents.length
                       ),
@@ -102,8 +136,9 @@ class _ChatScreenState extends State<ChatScreen> {
                                   Icons.send
                               ),
                               onPressed: () async{
-                                if(text != null) {
+                                if(text != '') {
                                   db.sendMessage(widget.user.uid, user2.uid, text , 0, chatId);
+                                  _controller.clear();
                                 }
                               },
                             ),
