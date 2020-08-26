@@ -657,31 +657,14 @@ class Database {
     return Message(content: content,fromUid: fromUid,time: time,toUid: toUid,type: type);
   }
 
-  Future sendMessage(String fromUid, String toUid, String content, int type) async{
-    Map message = {
-      'content' : content,
-      'fromUid' : fromUid,
-      'toUid' : toUid,
-      'time' : Timestamp.now().millisecondsSinceEpoch.toString(),
-      'type' : type,
-    };
-    if( await msgRef.document("$fromUid-$toUid").get().then((value) => !value.exists))
-    msgRef.document("$fromUid-$toUid").collection("$fromUid-$toUid").document(message['time']).setData({
-      'content' : content,
-      'fromUid' : fromUid,
-      'toUid' : toUid,
-      'time' : Timestamp.now().millisecondsSinceEpoch.toString(),
-      'type' : type,
-    });
-    else
-      msgRef.document("$fromUid-$toUid").collection("$fromUid-$toUid").document(message['time']).updateData({
+  Future sendMessage(String fromUid, String toUid, String content, int type, String chatId) async{
+    String time = Timestamp.now().millisecondsSinceEpoch.toString();
+    msgRef.document(chatId).collection(chatId).document(time).setData({
         'content' : content,
         'fromUid' : fromUid,
         'toUid' : toUid,
-        'time' : Timestamp.now().millisecondsSinceEpoch.toString(),
+        'time' : time,
         'type' : type,
       });
-    print(message);
+    }
   }
-
-}

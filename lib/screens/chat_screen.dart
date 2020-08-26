@@ -17,6 +17,8 @@ class _ChatScreenState extends State<ChatScreen> {
   User user2;
   TextEditingController _controller;
   String text;
+  List messages = [];
+  String chatId;
   void createUserData(var element){
     setState(() {
       user2 = db.createUser(
@@ -31,6 +33,10 @@ class _ChatScreenState extends State<ChatScreen> {
         element['saved'],
       );
     });
+    if(widget.user.uid.hashCode <= user2.uid.hashCode)
+      chatId = '${widget.user.uid}-${user2.uid}';
+    else
+      chatId = '${user2.uid}-${widget.user.uid}';
   }
 
   @override
@@ -45,66 +51,71 @@ class _ChatScreenState extends State<ChatScreen> {
           ),
         ),
         body: StreamBuilder(
-          stream: Firestore.instance.collection('Messages').document('${widget.user.uid}-${user2.uid}').collection('${widget.user.uid}-${user2.uid}').orderBy('time', descending: false).snapshots(),
+          stream: Firestore.instance.collection('Messages').document(chatId).collection(chatId).orderBy('time', descending: false).snapshots(),
           builder: (context, snapshot){
             return snapshot.hasData? CustomScrollView(
-              slivers: <Widget>[
-                SliverList(
-                  delegate: SliverChildBuilderDelegate(
-                    (BuildContext context, int index){
-                       return ListTile(
-                         title: Text(snapshot.data.documents[index]['content']),
-                       );
-                      },
-                    childCount: snapshot.data.documents.length
-                  ),
-                ),
-                SliverFillRemaining(
-                  hasScrollBody: false,
-                  child: Align(
-                    alignment: FractionalOffset.bottomCenter,
-                    child: Row(
-                      children: <Widget>[
-                        ConstrainedBox(
-                          constraints:  BoxConstraints.tight(Size(250,50)),
-                          child: TextFormField(
-                            decoration: InputDecoration(
-                              border: InputBorder.none,
-                            ),
-                            cursorColor: Colors.black,
-                            style: TextStyle(
-                              color: Colors.black,
-                            ),
-                            autofocus: false,
-                            controller: _controller,
-                            maxLines: null,
-                            keyboardType: TextInputType.multiline,
-                            onChanged: (value) {
-                              setState(() {
-                                text = value;
-                              });
-                            },
-                          ),
-                        ),
-                        IconButton(
-                          icon: Icon(
-                              Icons.send
-                          ),
-                          onPressed: () async{
-                            if(text != null) {
-                              db.sendMessage(widget.user.uid, user2.uid, text , 0);
-                            }
+                  slivers: <Widget>[
+                    SliverList(
+                      delegate: SliverChildBuilderDelegate(
+                              (BuildContext context, int index){
+                            return ListTile(
+                              title: Text(snapshot.data.documents[index]['content']),
+                            );
                           },
-                        ),
-                      ],
+                          childCount: snapshot.data.documents.length
+                      ),
                     ),
-                  ),
-                ),
-              ],
-            ) : Loading();
-          },
-        ),
-      ),
+                    SliverFillRemaining(
+                      hasScrollBody: false,
+                      child: Align(
+                        alignment: FractionalOffset.bottomCenter,
+                        child: Row(
+                          children: <Widget>[
+                            IconButton(
+                              icon: Icon(
+                                  Icons.image
+                              ),
+                            ),
+                            ConstrainedBox(
+                              constraints:  BoxConstraints.tight(Size(250,50)),
+                              child: TextFormField(
+                                decoration: InputDecoration(
+                                  border: InputBorder.none,
+                                ),
+                                cursorColor: Colors.black,
+                                style: TextStyle(
+                                  color: Colors.black,
+                                ),
+                                autofocus: false,
+                                controller: _controller,
+                                maxLines: null,
+                                keyboardType: TextInputType.multiline,
+                                onChanged: (value) {
+                                  setState(() {
+                                    text = value;
+                                  });
+                                },
+                              ),
+                            ),
+                            IconButton(
+                              icon: Icon(
+                                  Icons.send
+                              ),
+                              onPressed: () async{
+                                if(text != null) {
+                                  db.sendMessage(widget.user.uid, user2.uid, text , 0, chatId);
+                                }
+                              },
+                            ),
+                          ],
+                        ),
+                      ),
+                    ),
+                  ],
+                ) : Loading();
+              },
+    )
+    )
     );
   }
 }
