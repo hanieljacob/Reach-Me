@@ -13,7 +13,7 @@ class CommentsPage extends StatefulWidget {
 }
 
 class _CommentsPageState extends State<CommentsPage> {
-  TextEditingController _controller;
+  TextEditingController _controller = TextEditingController();
   String comment;
   bool firstTime = true;
   List comments = [];
@@ -90,8 +90,7 @@ class _CommentsPageState extends State<CommentsPage> {
                       backgroundColor: Colors.transparent,
                     ),
                   ),
-                  ConstrainedBox(
-                    constraints:  BoxConstraints.tight(Size(250,50)),
+                  Expanded(
                     child: TextFormField(
                       decoration: InputDecoration(
                         border: InputBorder.none,
@@ -120,7 +119,7 @@ class _CommentsPageState extends State<CommentsPage> {
                         Icons.send
                     ),
                     onPressed: () async{
-                      if(comment != null) {
+                      if(_controller.text != '') {
                         await db.addComment(
                             user.uid, widget.postUser, comment, widget.postId);
                         db.getComments(widget.postUser, widget.postId).then((
@@ -128,6 +127,7 @@ class _CommentsPageState extends State<CommentsPage> {
                             setState(() {
                               comments = value;
                             }));
+                        _controller.clear();
                       }
                     },
                   ),

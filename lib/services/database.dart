@@ -1,7 +1,9 @@
+import 'dart:io';
 import 'dart:math';
 
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:firebase_auth/firebase_auth.dart';
+import 'package:firebase_storage/firebase_storage.dart';
 import 'package:reach_me/models/Message.dart';
 
 import 'package:reach_me/models/Post.dart';
@@ -14,6 +16,9 @@ class Database {
   Random _rnd = Random();
   String getRandomString(int length) => String.fromCharCodes(Iterable.generate(
       length, (_) => _chars.codeUnitAt(_rnd.nextInt(_chars.length))));
+  final FirebaseStorage _firebaseStorage =
+  FirebaseStorage(storageBucket: 'gs://reach-me-23758.appspot.com');
+  StorageUploadTask _storageUploadTask;
 
   User createUser(
       String name,
@@ -24,8 +29,7 @@ class Database {
       List following,
       List requests,
       List requested,
-      List saved
-      ) {
+      List saved) {
     return User(
       name: name,
       uid: uid,
@@ -50,7 +54,7 @@ class Database {
         'following': [],
         'requests': [],
         'requested': [],
-        'saved' : [],
+        'saved': [],
       });
     }
   }
@@ -102,22 +106,31 @@ class Database {
     return user;
   }
 
-  Future addSavedPost(String uid,Post post) async{
+  Future addSavedPost(String uid, Post post) async {
     List savedPosts = [];
-    List savesId=[];
-    Map posts = {'id':post.id,'text' : post.text,'photoUrl' : post.photoUrl,'comments': post.comments,'postTime' : post.postTime,'likes':post.likes,'username':post.username,'uid':post.uid,'userphoto': post.userphoto};
+    List savesId = [];
+    Map posts = {
+      'id': post.id,
+      'text': post.text,
+      'photoUrl': post.photoUrl,
+      'comments': post.comments,
+      'postTime': post.postTime,
+      'likes': post.likes,
+      'username': post.username,
+      'uid': post.uid,
+      'userphoto': post.userphoto
+    };
     userRef.document(uid).get().then((value) {
       savedPosts = value.data['saved'];
       savedPosts.forEach((element) {
         savesId.add(element['id']);
       });
-      if(savesId.contains(post.id)){
+      if (savesId.contains(post.id)) {
         removeSavedPost(uid, post.id);
         savesId.remove(post.id);
-      }
-      else{
+      } else {
         userRef.document(uid).updateData({
-          'saved' : FieldValue.arrayUnion([posts])
+          'saved': FieldValue.arrayUnion([posts])
         });
         savesId.add(post.id);
       }
@@ -125,24 +138,21 @@ class Database {
     return savesId;
   }
 
-  void removeSavedPost(String uid,String postId) async{
+  void removeSavedPost(String uid, String postId) async {
     List posts = [];
     List posts2 = [];
     userRef.document(uid).get().then((value) {
       posts = value.data['saved'];
       posts.forEach((element) {
-        if(element['id'] != postId){
+        if (element['id'] != postId) {
           posts2.add(element);
         }
       });
-      userRef.document(uid).updateData({
-        'saved' : posts2
-      });
+      userRef.document(uid).updateData({'saved': posts2});
     });
-
   }
 
-  Future getSavedPost(String uid) async{
+  Future getSavedPost(String uid) async {
     List<Post> post = [];
     List posts = [];
     await userRef.document(uid).get().then((value) {
@@ -165,16 +175,14 @@ class Database {
     return post;
   }
 
-  Future getSavedPostId(String uid) async{
+  Future getSavedPostId(String uid) async {
     List post = [];
     List posts = [];
     await userRef.document(uid).get().then((value) {
       posts = value.data['saved'];
     });
     posts.forEach((element) {
-      post.add(
-          element['id']
-      );
+      post.add(element['id']);
     });
     print(post);
     return post;
@@ -319,73 +327,68 @@ class Database {
         .document(uid)
         .get()
         .then((value) => value.data.forEach((key, value) {
-      if (key == "posts") {
-        post = value;
-        post.add({
-          'text': text,
-          'photoUrl': url,
-          'comments': [],
-          'likes': [],
-          'postTime': DateTime.now(),
-          'id': getRandomString(15),
-        });
-        userRef.document(uid).updateData({'posts': post});
-        // print(post.length);
-        // postCount = post.length;
-      }
-    }));
+              if (key == "posts") {
+                post = value;
+                post.add({
+                  'text': text,
+                  'photoUrl': url,
+                  'comments': [],
+                  'likes': [],
+                  'postTime': DateTime.now(),
+                  'id': getRandomString(15),
+                });
+                userRef.document(uid).updateData({'posts': post});
+                // print(post.length);
+                // postCount = post.length;
+              }
+            }));
     // return postCount;
   }
 
-  Future likeAndUnlikePost(String currentUser, String postUser, String id) async{
+  Future likeAndUnlikePost(
+      String currentUser, String postUser, String id) async {
     List post = [];
     List likes = [];
     Map posts;
     bool isLiked;
     post = await getPosts(postUser);
     post.forEach((element) {
-      if(element['id'] == id) {
-        if(element['likes'].contains(currentUser)){
+      if (element['id'] == id) {
+        if (element['likes'].contains(currentUser)) {
           element['likes'].remove(currentUser);
           isLiked = false;
-        }
-        else {
+        } else {
           element['likes'].add(currentUser);
           isLiked = true;
         }
         posts = element;
       }
     });
-    userRef.document(postUser).updateData({
-      'posts' : post
-    });
+    userRef.document(postUser).updateData({'posts': post});
     return posts['likes'];
   }
 
-  Future likeAPost(String currentUser, String postUser, String id) async{
+  Future likeAPost(String currentUser, String postUser, String id) async {
     List post = [];
     List likes = [];
     Map posts;
     bool isLiked;
     post = await getPosts(postUser);
     post.forEach((element) {
-      if(element['id'] == id) {
-        if(element['likes'].contains(currentUser)){
-        }
-        else {
+      if (element['id'] == id) {
+        if (element['likes'].contains(currentUser)) {
+        } else {
           element['likes'].add(currentUser);
           isLiked = true;
         }
         posts = element;
       }
     });
-    userRef.document(postUser).updateData({
-      'posts' : post
-    });
+    userRef.document(postUser).updateData({'posts': post});
     return posts['likes'];
   }
 
-  Future getLikedUsers(List uid) async{
+  Future getLikedUsers(List uid) async {
     List users = [];
     var result = await userRef.getDocuments();
     result.documents.forEach((element) {
@@ -417,10 +420,10 @@ class Database {
         .document(uid)
         .get()
         .then((value) => value.data.forEach((key, value) {
-      if (key == "posts") {
-        post = value;
-      }
-    }));
+              if (key == "posts") {
+                post = value;
+              }
+            }));
     // print('Hello' + postCount.toString());
 
     return post;
@@ -433,12 +436,12 @@ class Database {
         .document(uid)
         .get()
         .then((value) => value.data.forEach((key, value) {
-      if (key == "posts") {
-        post = value;
-        // print(post.length);
-        postCount = post.length + 1;
-      }
-    }));
+              if (key == "posts") {
+                post = value;
+                // print(post.length);
+                postCount = post.length + 1;
+              }
+            }));
     print('Hello' + postCount.toString());
     return postCount;
   }
@@ -525,34 +528,41 @@ class Database {
         .document(uid)
         .get()
         .then((value) => value.data.forEach((key, value) {
-      if (key == 'requests') requests = value;
-    }));
+              if (key == 'requests') requests = value;
+            }));
     return requests;
   }
 
-  Future addComment(String curUser,String postUser,String comment,String postID) async{
+  Future addComment(
+      String curUser, String postUser, String comment, String postID) async {
     List post = [];
     Map comments;
     User user;
     post = await getPosts(postUser);
     user = await getUser(curUser);
     post.forEach((element) {
-      if(element['id']==postID){
-        comments = {'user':curUser,'comment':comment,'time':Timestamp.now(),'userPic':user.photoUrl,'username':user.name};
+      if (element['id'] == postID) {
+        comments = {
+          'user': curUser,
+          'comment': comment,
+          'time': Timestamp.now(),
+          'userPic': user.photoUrl,
+          'username': user.name
+        };
         element['comments'].add(comments);
       }
     });
     userRef.document(postUser).updateData({
-      'posts':post,
+      'posts': post,
     });
   }
 
-  Future getComments(String postUser,String postID) async{
+  Future getComments(String postUser, String postID) async {
     List post = [];
     List comments = [];
     post = await getPosts(postUser);
     post.forEach((element) {
-      if(element['id']==postID){
+      if (element['id'] == postID) {
         comments = element['comments'];
       }
     });
@@ -600,18 +610,34 @@ class Database {
     return (time);
   }
 
-  Future deletePost(String postUser, String postId) async{
+  Future chatImageUpload({String chatId, File file, String fromUid, String toUid}) async{
+    var task;
+    String time = Timestamp.now().millisecondsSinceEpoch.toString();
+    String filePath = 'chat/$chatId/$time.png';
+    _storageUploadTask = _firebaseStorage.ref().child(filePath).putFile(file);
+    task = await _storageUploadTask.onComplete;
+    var url = await task.ref.getDownloadURL();
+    print('Mine' + url);
+    msgRef.document(chatId).collection(chatId).document(time).setData({
+      'content': url,
+      'fromUid': fromUid,
+      'toUid': toUid,
+      'time': time,
+      'type': 1,
+    });
+  }
+
+
+  Future deletePost(String postUser, String postId) async {
     List posts = [];
     List posts2 = [];
     posts = await getPosts(postUser);
     posts.forEach((element) {
-      if(postId != element['id']){
+      if (postId != element['id']) {
         posts2.add(element);
       }
     });
-    userRef.document(postUser).updateData({
-      'posts' : posts2
-    });
+    userRef.document(postUser).updateData({'posts': posts2});
   }
 
   Future addFollowerAndFollowing(String curUser, String reqUser) async {
@@ -653,18 +679,25 @@ class Database {
     });
   }
 
-  Message createMessage(String content, String fromUid, String toUid, String time, int type){
-    return Message(content: content,fromUid: fromUid,time: time,toUid: toUid,type: type);
+  Message createMessage(
+      String content, String fromUid, String toUid, String time, int type) {
+    return Message(
+        content: content,
+        fromUid: fromUid,
+        time: time,
+        toUid: toUid,
+        type: type);
   }
 
-  Future sendMessage(String fromUid, String toUid, String content, int type, String chatId) async{
+  Future sendMessage(String fromUid, String toUid, String content, int type,
+      String chatId) async {
     String time = Timestamp.now().millisecondsSinceEpoch.toString();
     msgRef.document(chatId).collection(chatId).document(time).setData({
-        'content' : content,
-        'fromUid' : fromUid,
-        'toUid' : toUid,
-        'time' : time,
-        'type' : type,
-      });
-    }
+      'content': content,
+      'fromUid': fromUid,
+      'toUid': toUid,
+      'time': time,
+      'type': type,
+    });
   }
+}
