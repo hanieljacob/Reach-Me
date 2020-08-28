@@ -1,5 +1,6 @@
 import 'dart:io';
 
+import 'package:cached_network_image/cached_network_image.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_image_compress/flutter_image_compress.dart';
@@ -10,7 +11,7 @@ import 'package:reach_me/models/User.dart';
 import 'package:reach_me/services/database.dart';
 
 class ChatScreen extends StatefulWidget {
-  var user2;
+  final DocumentSnapshot user2;
   final User user;
   ChatScreen({this.user, this.user2});
   @override
@@ -38,7 +39,7 @@ class _ChatScreenState extends State<ChatScreen> {
 
     File croppedFile = await ImageCropper.cropImage(
       sourcePath: file.path,
-      aspectRatioPresets: [CropAspectRatioPreset.ratio4x3],
+      aspectRatioPresets: [CropAspectRatioPreset.ratio4x3, CropAspectRatioPreset.original, CropAspectRatioPreset.square],
       maxWidth: 512,
       maxHeight: 512,
     );
@@ -51,7 +52,11 @@ class _ChatScreenState extends State<ChatScreen> {
       quality: 100,
     );
 
-    db.chatImageUpload(chatId: chatId, fromUid: widget.user.uid, toUid: user2.uid, file: result);
+    db.chatImageUpload(
+        chatId: chatId,
+        fromUid: widget.user.uid,
+        toUid: user2.uid,
+        file: result);
 
     setState(() {
       _image = result;
@@ -59,26 +64,67 @@ class _ChatScreenState extends State<ChatScreen> {
     });
   }
 
-  String timeFormat(int millisec){
-      DateTime date = DateTime.fromMillisecondsSinceEpoch(millisec);
-      int hour = date.hour;
-      int currentMili = DateTime(DateTime.now().year,DateTime.now().month, DateTime.now().day, 0, 0, 0, 0).millisecondsSinceEpoch;
-      String appendedTime = '';
-      int difference = millisec - currentMili;
-      print(difference);
-    if(difference>=0)
+  String timeFormat(int millisec) {
+    DateTime date = DateTime.fromMillisecondsSinceEpoch(millisec);
+    int hour = date.hour;
+    int currentMili = DateTime(DateTime.now().year, DateTime.now().month,
+        DateTime.now().day, 0, 0, 0, 0)
+        .millisecondsSinceEpoch;
+    String appendedTime = '';
+    int difference = millisec - currentMili;
+    print(difference);
+    if (difference >= 0)
       appendedTime = 'Today @ ';
-    else if(difference<0 && difference>= -60000 * 60 * 24)
+    else if (difference < 0 && difference >= -60000 * 60 * 24)
       appendedTime = 'Yesterday @ ';
-    else
-      appendedTime = date.day.toString() + '/' + date.month.toString() + '/' + date.year.toString() + ' @ ';
-      if(hour>12 ) {
-        hour = hour - 12;
-        appendedTime += hour.toString() + ':' + DateTime.fromMillisecondsSinceEpoch(millisec).minute.toString() + ' PM';
-      }
+    else {
+      if(date.month>=10)
+        appendedTime = date.day.toString() +
+            '/' +
+            date.month.toString() +
+            '/' +
+            date.year.toString() +
+            ' @ ';
       else
-        appendedTime += hour.toString() + ':' + DateTime.fromMillisecondsSinceEpoch(millisec).minute.toString() + ' AM';
-      return appendedTime;
+        appendedTime = date.day.toString() +
+            '/0' +
+            date.month.toString() +
+            '/' +
+            date.year.toString() +
+            ' @ ';
+    }
+    if (hour > 12) {
+      hour = hour - 12;
+      if(DateTime.fromMillisecondsSinceEpoch(millisec).minute>=10)
+        appendedTime += hour.toString() +
+            ':' +
+            DateTime.fromMillisecondsSinceEpoch(millisec).minute.toString() +
+            ' PM';
+      else
+        appendedTime += hour.toString() +
+            ':0' +
+            DateTime.fromMillisecondsSinceEpoch(millisec).minute.toString() +
+            ' PM';
+    } else {
+      if(DateTime.fromMillisecondsSinceEpoch(millisec).minute>=10)
+        appendedTime += hour.toString() +
+            ':' +
+            DateTime
+                .fromMillisecondsSinceEpoch(millisec)
+                .minute
+                .toString() +
+            ' AM';
+      else
+        appendedTime += hour.toString() +
+            ':0' +
+            DateTime
+                .fromMillisecondsSinceEpoch(millisec)
+                .minute
+                .toString() +
+            ' AM';
+
+    }
+    return appendedTime;
   }
 
   void createUserData(var element) {
@@ -93,6 +139,7 @@ class _ChatScreenState extends State<ChatScreen> {
         element['requests'],
         element['requested'],
         element['saved'],
+        element['token'],
       );
     });
     if (widget.user.uid.hashCode <= user2.uid.hashCode)
@@ -147,7 +194,6 @@ class _ChatScreenState extends State<ChatScreen> {
 
   @override
   Widget build(BuildContext context) {
-
     createUserData(widget.user2);
 //    db.sendMessage(widget.user.uid, user2.uid, "hi", 0);
     return SafeArea(
@@ -179,7 +225,8 @@ class _ChatScreenState extends State<ChatScreen> {
                                   mainAxisAlignment: MainAxisAlignment.start,
                                   children: <Widget>[
                                     Column(
-                                      crossAxisAlignment: CrossAxisAlignment.start,
+                                      crossAxisAlignment:
+                                          CrossAxisAlignment.start,
                                       children: [
                                         Padding(
                                           padding: const EdgeInsets.all(8.0),
@@ -187,14 +234,34 @@ class _ChatScreenState extends State<ChatScreen> {
                                             constraints: BoxConstraints(
                                               maxWidth: 200,
                                             ),
-                                            child: doc['type']==0? Text(
-                                              doc['content'],
-                                              style:
-                                                  TextStyle(color: Colors.blue),
-                                            ) : Image.network(doc['content']),
-                                            padding: EdgeInsets.fromLTRB(
-                                                15.0, 10.0, 15.0, 10.0),
-                                            decoration: BoxDecoration(
+                                            child: doc['type'] == 0
+                                                ? Text(
+                                                    doc['content'],
+                                                    style: TextStyle(
+                                                        color: Colors.blue),
+                                                  )
+                                                : ClipRRect(
+                                                    child: CachedNetworkImage(
+                                                      imageUrl: doc['content'],
+                                                      placeholder:
+                                                          (context, imageUrl) =>
+                                                              Loading(),
+                                                    ),
+                                                    borderRadius:
+                                                        BorderRadius.only(
+                                                      topLeft:
+                                                          Radius.circular(8.0),
+                                                      topRight:
+                                                          Radius.circular(8.0),
+                                                      bottomRight:
+                                                          Radius.circular(8.0),
+                                                    ),
+                                                  ),
+                                            padding: doc['type'] == 0
+                                                ? EdgeInsets.fromLTRB(
+                                                    15.0, 10.0, 15.0, 10.0)
+                                                : EdgeInsets.all(2),
+                                            decoration: doc['type'] == 0? BoxDecoration(
                                                 color: Colors.transparent,
                                                 borderRadius: BorderRadius.only(
                                                   topLeft: Radius.circular(8.0),
@@ -204,14 +271,15 @@ class _ChatScreenState extends State<ChatScreen> {
                                                       Radius.circular(8.0),
                                                 ),
                                                 border: Border.all(
-                                                    color: Colors.blue)),
+                                                    color: Colors.blue)
+                                            ) : null,
                                           ),
                                         ),
                                         Padding(
-                                          padding: const EdgeInsets.only(top: 2, left: 8),
+                                          padding: const EdgeInsets.only(
+                                              top: 2, left: 8),
                                           child: Text(
-                                          timeFormat(int.parse(doc['time'])),
-
+                                            timeFormat(int.parse(doc['time'])),
                                             style: TextStyle(
                                               color: Colors.grey,
                                               fontSize: 10,
@@ -228,7 +296,8 @@ class _ChatScreenState extends State<ChatScreen> {
                                   mainAxisAlignment: MainAxisAlignment.end,
                                   children: <Widget>[
                                     Column(
-                                      crossAxisAlignment: CrossAxisAlignment.end,
+                                      crossAxisAlignment:
+                                          CrossAxisAlignment.end,
                                       children: [
                                         Padding(
                                           padding: const EdgeInsets.all(8.0),
@@ -236,14 +305,34 @@ class _ChatScreenState extends State<ChatScreen> {
                                             constraints: BoxConstraints(
                                               maxWidth: 200,
                                             ),
-                                            child: doc['type']==0? Text(
-                                              doc['content'],
-                                              style:
-                                              TextStyle(color: Colors.blue),
-                                            ) : Image.network(doc['content']),
-                                            padding: EdgeInsets.fromLTRB(
-                                                15.0, 10.0, 15.0, 10.0),
-                                            decoration: BoxDecoration(
+                                            child: doc['type'] == 0
+                                                ? Text(
+                                                    doc['content'],
+                                                    style: TextStyle(
+                                                        color: Colors.white),
+                                                  )
+                                                : ClipRRect(
+                                                    child: CachedNetworkImage(
+                                                      imageUrl: doc['content'],
+                                                      placeholder:
+                                                          (context, imageUrl) =>
+                                                              Loading(),
+                                                    ),
+                                                    borderRadius:
+                                                        BorderRadius.only(
+                                                      topLeft:
+                                                          Radius.circular(8.0),
+                                                      topRight:
+                                                          Radius.circular(8.0),
+                                                      bottomLeft:
+                                                          Radius.circular(8.0),
+                                                    ),
+                                                  ),
+                                            padding: doc['type'] == 0
+                                                ? EdgeInsets.fromLTRB(
+                                                    15.0, 10.0, 15.0, 10.0)
+                                                : EdgeInsets.all(2),
+                                            decoration: doc['type'] == 0? BoxDecoration(
                                               color: Colors.blue,
                                               borderRadius: BorderRadius.only(
                                                 topLeft: Radius.circular(8.0),
@@ -251,14 +340,14 @@ class _ChatScreenState extends State<ChatScreen> {
                                                 bottomLeft:
                                                     Radius.circular(8.0),
                                               ),
-                                            ),
+                                            ) : null,
                                           ),
                                         ),
                                         Padding(
-                                          padding: const EdgeInsets.only(top: 2, right: 8),
+                                          padding: const EdgeInsets.only(
+                                              top: 2, right: 8),
                                           child: Text(
-                              timeFormat(int.parse(doc['time'])),
-
+                                            timeFormat(int.parse(doc['time'])),
                                             style: TextStyle(
                                               color: Colors.grey,
                                               fontSize: 10,

@@ -1,4 +1,5 @@
 import 'package:firebase_auth/firebase_auth.dart';
+import 'package:firebase_messaging/firebase_messaging.dart';
 import 'package:google_sign_in/google_sign_in.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
 
@@ -6,6 +7,7 @@ import './services/database.dart';
 
 //String Uid;
 class AuthProvider {
+  FirebaseMessaging _firebaseMessaging = FirebaseMessaging();
   Database db = Database();
   AuthResult res;
   GoogleSignInAccount account;
@@ -46,7 +48,7 @@ class AuthProvider {
       res = await _auth.signInWithCredential(GoogleAuthProvider.getCredential(
           idToken: (await account.authentication).idToken,
           accessToken: (await account.authentication).accessToken));
-      db.createNewUserData(res.user);
+      db.createNewUserData(res.user, await _firebaseMessaging.getToken());
 //      firestoreInstance.collection("Users").document(res.user.uid).setData({});
 //      Uid = res.user.uid;
 //      postPage.storeUserId(res.user.uid);

@@ -1,4 +1,6 @@
+import 'dart:io';
 import 'package:firebase_auth/firebase_auth.dart';
+import 'package:firebase_messaging/firebase_messaging.dart';
 import 'package:flutter/cupertino.dart';
 import 'package:reach_me/components/PostCard.dart';
 import 'package:reach_me/firebase_auth.dart';
@@ -6,12 +8,12 @@ import 'package:flutter/material.dart';
 import 'package:reach_me/models/Post.dart';
 import 'package:reach_me/models/User.dart';
 import 'package:reach_me/screens/chat.dart';
+import 'package:reach_me/services/push_token.dart';
 import 'search.dart';
 import 'post.dart';
 import 'notifications.dart';
 import 'account.dart';
 
-import '../services/receive.dart';
 import 'package:provider/provider.dart';
 import '../services/database.dart';
 
@@ -23,6 +25,7 @@ class HomePage extends StatefulWidget {
 }
 
 class _HomePageState extends State<HomePage> {
+  FirebaseMessaging _firebaseMessaging = FirebaseMessaging();
   List<Post> post = [];
   int _selectedIndex = 0;
   String uid;
@@ -40,12 +43,51 @@ class _HomePageState extends State<HomePage> {
   }
 
   @override
+    void initState() {
+      super.initState();
+      firebaseCloudMessaging_Listeners();
+    }
+
+    void firebaseCloudMessaging_Listeners() {
+      if (Platform.isIOS) iOS_Permission();
+
+      _firebaseMessaging.getToken().then((token){
+
+      });
+
+      _firebaseMessaging.configure(
+        onMessage: (Map<String, dynamic> message) async {
+          print('on message $message');
+        },
+        onResume: (Map<String, dynamic> message) async {
+          print('on resume $message');
+        },
+        onLaunch: (Map<String, dynamic> message) async {
+          print('on launch $message');
+        },
+      );
+    }
+
+    void iOS_Permission() {
+      _firebaseMessaging.requestNotificationPermissions(
+          IosNotificationSettings(sound: true, badge: true, alert: true)
+      );
+      _firebaseMessaging.onIosSettingsRegistered
+          .listen((IosNotificationSettings settings) {
+        print("Settings registered: $settings");
+      });
+    }
+
+  @override
   Widget build(BuildContext context) {
+
     _selectedIndex = widget.index;
     var user = Provider.of<FirebaseUser>(context);
     if (firstTime) {
       print("Hello There");
-      reload(user.uid, );
+      reload(
+        user.uid,
+      );
       firstTime = false;
     }
     return _selectedIndex == 0
@@ -54,7 +96,7 @@ class _HomePageState extends State<HomePage> {
             appBar: AppBar(
               leading: IconButton(
                 onPressed: () {
-                  reload(user.uid);
+
                 },
                 icon: Icon(
                   Icons.public,
@@ -65,7 +107,11 @@ class _HomePageState extends State<HomePage> {
               actions: <Widget>[
                 IconButton(
                   onPressed: () {
-                    Navigator.push(context, MaterialPageRoute(builder: (context) => ChatPage(uid: user.uid, user: user2)));
+                    Navigator.push(
+                        context,
+                        MaterialPageRoute(
+                            builder: (context) =>
+                                ChatPage(uid: user.uid, user: user2)));
                   },
                   icon: Icon(
                     Icons.send,
@@ -93,7 +139,7 @@ class _HomePageState extends State<HomePage> {
                             )
                           : PostCard(
                               post: post[index],
-                            accountsPage: false,
+                              accountsPage: false,
                             );
                     }, childCount: post.length == 0 ? 1 : post.length),
                   )

@@ -29,7 +29,8 @@ class Database {
       List following,
       List requests,
       List requested,
-      List saved) {
+      List saved,
+      String token) {
     return User(
       name: name,
       uid: uid,
@@ -40,10 +41,11 @@ class Database {
       requests: requests,
       requested: requested,
       saved: saved,
+      token: token,
     );
   }
 
-  Future createNewUserData(FirebaseUser user) async {
+  Future createNewUserData(FirebaseUser user, String token) async {
     if (await userRef.document(user.uid).get().then((value) => !value.exists)) {
       return await userRef.document(user.uid).setData({
         "uid": user.uid,
@@ -55,6 +57,7 @@ class Database {
         'requests': [],
         'requested': [],
         'saved': [],
+        'token' : token
       });
     }
   }
@@ -75,6 +78,7 @@ class Database {
             element.data['requests'],
             element.data['requested'],
             element.data['saved'],
+            element.data['token']
           ),
         );
       }
@@ -100,6 +104,7 @@ class Database {
           element.data['requests'],
           element.data['requested'],
           element.data['saved'],
+          element.data['token'],
         );
       }
     });
@@ -404,6 +409,7 @@ class Database {
             element.data['requests'],
             element.data['requested'],
             element.data['saved'],
+            element.data['token'],
           ),
         );
       }
@@ -484,6 +490,7 @@ class Database {
           element.data['requests'],
           element.data['requested'],
           element.data['saved'],
+          element.data['token'],
         ),
       );
     });
@@ -511,6 +518,7 @@ class Database {
           element.data['requests'],
           element.data['requested'],
           element.data['saved'],
+          element.data['token'],
         ),
       );
     });

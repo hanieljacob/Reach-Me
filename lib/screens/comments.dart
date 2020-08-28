@@ -2,13 +2,12 @@ import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import 'package:reach_me/services/database.dart';
-import 'package:font_awesome_flutter/font_awesome_flutter.dart';
 
 class CommentsPage extends StatefulWidget {
-    final String postUser;
-    final String postId;
-    CommentsPage({this.postUser,this.postId});
-    @override
+  final String postUser;
+  final String postId;
+  CommentsPage({this.postUser, this.postId});
+  @override
   _CommentsPageState createState() => _CommentsPageState();
 }
 
@@ -20,56 +19,47 @@ class _CommentsPageState extends State<CommentsPage> {
   Database db = Database();
   @override
   Widget build(BuildContext context) {
-    if(firstTime == true){
-      db.getComments(widget.postUser,widget.postId).then((value) => setState((){
-        comments = value;
-      }));
+    if (firstTime == true) {
+      db
+          .getComments(widget.postUser, widget.postId)
+          .then((value) => setState(() {
+                comments = value;
+              }));
       firstTime = false;
     }
     var user = Provider.of<FirebaseUser>(context);
     return Scaffold(
       appBar: AppBar(
-        title: Text(
-          'Comments'
-        ),
+        title: Text('Comments'),
       ),
       body: CustomScrollView(
         slivers: <Widget>[
           SliverList(
-            delegate: SliverChildBuilderDelegate(
-                (BuildContext context, int index){
-                  return ListTile(
-                    subtitle: Text(
-                      db.convertTime(comments[index]['time'])
-                    ),
-                    onTap: () {},
-                    leading: CircleAvatar(
-                      backgroundImage:
-                      NetworkImage(comments[index]['userPic']),
-                    ),
-                    title: RichText(
-                      text: TextSpan(
-                        style: TextStyle(
-                            color: Colors.black
-                        ),
-                        children: <TextSpan>[
-                        TextSpan( text: comments[index]['username'],
-                        style: TextStyle(
-                          fontWeight: FontWeight.bold,
-                        ),
-                          ),
+            delegate:
+                SliverChildBuilderDelegate((BuildContext context, int index) {
+              return ListTile(
+                  subtitle: Text(db.convertTime(comments[index]['time'])),
+                  onTap: () {},
+                  leading: CircleAvatar(
+                    backgroundImage: NetworkImage(comments[index]['userPic']),
+                  ),
+                  title: RichText(
+                    text: TextSpan(
+                      style: TextStyle(color: Colors.black),
+                      children: <TextSpan>[
                         TextSpan(
-                          text: '  '
+                          text: comments[index]['username'],
+                          style: TextStyle(
+                            fontWeight: FontWeight.bold,
+                          ),
                         ),
-                          TextSpan(text: "\n"),
-                        TextSpan( text: comments[index]['comment']),
+                        TextSpan(text: '  '),
+                        TextSpan(text: "\n"),
+                        TextSpan(text: comments[index]['comment']),
                       ],
                     ),
-                    )
-                  );
-                },
-              childCount: comments.length
-            ),
+                  ));
+            }, childCount: comments.length),
           ),
           SliverFillRemaining(
             hasScrollBody: false,
@@ -115,18 +105,16 @@ class _CommentsPageState extends State<CommentsPage> {
                     ),
                   ),
                   IconButton(
-                    icon: Icon(
-                        Icons.send
-                    ),
-                    onPressed: () async{
-                      if(_controller.text != '') {
+                    icon: Icon(Icons.send),
+                    onPressed: () async {
+                      if (_controller.text != '') {
                         await db.addComment(
                             user.uid, widget.postUser, comment, widget.postId);
-                        db.getComments(widget.postUser, widget.postId).then((
-                            value) =>
-                            setState(() {
-                              comments = value;
-                            }));
+                        db
+                            .getComments(widget.postUser, widget.postId)
+                            .then((value) => setState(() {
+                                  comments = value;
+                                }));
                         _controller.clear();
                       }
                     },

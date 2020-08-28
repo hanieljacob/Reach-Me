@@ -8,6 +8,7 @@ class User {
   List requests;
   List requested;
   List saved;
+  String token;
   User({
     this.name,
     this.photoUrl,
@@ -18,5 +19,6 @@ class User {
     this.requests,
     this.requested,
     this.saved,
+    this.token,
   });
 }
