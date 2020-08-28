@@ -1,14 +1,15 @@
+import 'dart:convert';
 import 'dart:io';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:firebase_messaging/firebase_messaging.dart';
 import 'package:flutter/cupertino.dart';
+import 'package:flutter_local_notifications/flutter_local_notifications.dart';
 import 'package:reach_me/components/PostCard.dart';
 import 'package:reach_me/firebase_auth.dart';
 import 'package:flutter/material.dart';
 import 'package:reach_me/models/Post.dart';
 import 'package:reach_me/models/User.dart';
 import 'package:reach_me/screens/chat.dart';
-import 'package:reach_me/services/push_token.dart';
 import 'search.dart';
 import 'post.dart';
 import 'notifications.dart';
@@ -33,6 +34,8 @@ class _HomePageState extends State<HomePage> {
   bool firstTime = true;
   Database db = Database();
   AuthProvider _authProvider = AuthProvider();
+  final FlutterLocalNotificationsPlugin flutterLocalNotificationsPlugin =
+      FlutterLocalNotificationsPlugin();
 
   void reload(String uid) {
     db.getUser(uid).then((value) => user2 = value);
@@ -43,44 +46,75 @@ class _HomePageState extends State<HomePage> {
   }
 
   @override
-    void initState() {
-      super.initState();
-      firebaseCloudMessaging_Listeners();
-    }
+  void initState() {
+    super.initState();
+    firebaseCloudMessaging_Listeners();
+    configLocalNotification();
+  }
 
-    void firebaseCloudMessaging_Listeners() {
-      if (Platform.isIOS) iOS_Permission();
+  void showNotification(message) async {
+    var androidPlatformChannelSpecifics = new AndroidNotificationDetails(
+      Platform.isAndroid
+          ? 'com.dfa.flutterchatdemo'
+          : 'com.duytq.flutterchatdemo',
+      'Flutter chat demo',
+      'your channel description',
+      playSound: true,
+      enableVibration: true,
+      importance: Importance.Max,
+      priority: Priority.High,
+    );
+    var iOSPlatformChannelSpecifics = new IOSNotificationDetails();
+    var platformChannelSpecifics = new NotificationDetails(
+        androidPlatformChannelSpecifics, iOSPlatformChannelSpecifics);
+    await flutterLocalNotificationsPlugin.show(0, message['title'].toString(),
+        message['body'].toString(), platformChannelSpecifics,
+        payload: json.encode(message));
+  }
 
-      _firebaseMessaging.getToken().then((token){
+  void configLocalNotification() {
+    var initializationSettingsAndroid =
+        new AndroidInitializationSettings('@mipmap/ic_launcher');
+    var initializationSettingsIOS = new IOSInitializationSettings();
+    var initializationSettings = new InitializationSettings(
+        initializationSettingsAndroid, initializationSettingsIOS);
+    flutterLocalNotificationsPlugin.initialize(initializationSettings);
+  }
 
-      });
+  void firebaseCloudMessaging_Listeners() {
+    if (Platform.isIOS) iOS_Permission();
+    _firebaseMessaging.requestNotificationPermissions();
 
-      _firebaseMessaging.configure(
-        onMessage: (Map<String, dynamic> message) async {
-          print('on message $message');
-        },
-        onResume: (Map<String, dynamic> message) async {
-          print('on resume $message');
-        },
-        onLaunch: (Map<String, dynamic> message) async {
-          print('on launch $message');
-        },
-      );
-    }
+    _firebaseMessaging.getToken().then((token) {});
 
-    void iOS_Permission() {
-      _firebaseMessaging.requestNotificationPermissions(
-          IosNotificationSettings(sound: true, badge: true, alert: true)
-      );
-      _firebaseMessaging.onIosSettingsRegistered
-          .listen((IosNotificationSettings settings) {
-        print("Settings registered: $settings");
-      });
-    }
+    _firebaseMessaging.configure(
+      onMessage: (Map<String, dynamic> message) async {
+        Platform.isAndroid
+            ? showNotification(message['notification'])
+            : showNotification(message['aps']['alert']);
+        print('on message ${message['notification']}');
+        print('Hello');
+      },
+      onResume: (Map<String, dynamic> message) async {
+        print('on resume $message');
+      },
+      onLaunch: (Map<String, dynamic> message) async {
+        print('on launch $message');
+      },
+    );
+  }
+
+  void iOS_Permission() {
+    _firebaseMessaging.requestNotificationPermissions(
+        IosNotificationSettings(sound: true, badge: true, alert: true));
+    _firebaseMessaging.onIosSettingsRegistered
+        .listen((IosNotificationSettings settings) {
+      print("Settings registered: $settings");
+    });
+  }
 
   @override
   Widget build(BuildContext context) {
-
     _selectedIndex = widget.index;
     var user = Provider.of<FirebaseUser>(context);
     if (firstTime) {
@@ -95,9 +129,7 @@ class _HomePageState extends State<HomePage> {
             backgroundColor: Colors.grey[100],
             appBar: AppBar(
               leading: IconButton(
-                onPressed: () {
-
-                },
+                onPressed: () {},
                 icon: Icon(
                   Icons.public,
                   color: Colors.white,
