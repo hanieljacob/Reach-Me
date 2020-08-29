@@ -1,3 +1,4 @@
+import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
@@ -42,40 +43,46 @@ class _NotificationsPageState extends State<NotificationsPage> {
     return _selectedIndex == 3
         ? SafeArea(
             child: Scaffold(
-                body: CustomScrollView(slivers: [
+                body: StreamBuilder<Object>(
+                  stream: Firestore.instance.collection('Users').document(user.uid).snapshots(),
+                  builder: (context, snapshot) {
+                    getRequestedUsers(user.uid);
+                    return CustomScrollView(slivers: [
               SliverList(
-                delegate: SliverChildBuilderDelegate(
-                    (BuildContext context, int index) {
-                  return Padding(
-                    padding: EdgeInsets.symmetric(
-                      vertical: 10,
-                      horizontal: 5,
-                    ),
-                    child: ListTile(
-                      onTap: () {},
-                      leading: CircleAvatar(
-                        backgroundImage: NetworkImage(reqUsers[index].photoUrl),
-                      ),
-                      title: Text(reqUsers[index].name),
-                      trailing: FlatButton(
-                        textColor: Colors.white,
-                        color: Colors.blue,
-                        child: Text('Accept'),
-                        onPressed: () {
-                          db.addFollowerAndFollowing(
-                            user.uid,
-                            reqUsers[index].uid,
-                          );
-                          setState(() {
-                            firsttime = true;
-                          });
-                        },
-                      ),
-                    ),
-                  );
-                }, childCount: reqUsers.length),
+                    delegate: SliverChildBuilderDelegate(
+                        (BuildContext context, int index) {
+                      return Padding(
+                        padding: EdgeInsets.symmetric(
+                          vertical: 10,
+                          horizontal: 5,
+                        ),
+                        child: ListTile(
+                          onTap: () {},
+                          leading: CircleAvatar(
+                            backgroundImage: NetworkImage(reqUsers[index].photoUrl),
+                          ),
+                          title: Text(reqUsers[index].name),
+                          trailing: FlatButton(
+                            textColor: Colors.white,
+                            color: Colors.blue,
+                            child: Text('Accept'),
+                            onPressed: () {
+                              db.addFollowerAndFollowing(
+                                user.uid,
+                                reqUsers[index].uid,
+                              );
+                              setState(() {
+                                firsttime = true;
+                              });
+                            },
+                          ),
+                        ),
+                      );
+                    }, childCount: reqUsers.length),
               )
-            ])),
+            ]);
+                  }
+                )),
           )
         : _selectedIndex == 0
             ? HomePage(

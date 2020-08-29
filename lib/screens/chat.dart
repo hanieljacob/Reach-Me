@@ -43,7 +43,7 @@ class _ChatPageState extends State<ChatPage> {
               return ListView.builder(
                 padding: EdgeInsets.all(10.0),
                 itemBuilder: (context, index) {
-                  if(snapshot.data.documents[index]['uid'] == widget.user.uid)
+                  if(snapshot.data.documents[index]['uid'] == widget.uid)
                     return SizedBox.shrink();
                   else if(widget.user.followers.contains(snapshot.data.documents[index]['uid']) || widget.user.following.contains(snapshot.data.documents[index]['uid']))
                   return ListTile(

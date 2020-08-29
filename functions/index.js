@@ -18,17 +18,17 @@ exports.sendNotification = functions.firestore
     admin
       .firestore()
       .collection('Users')
-      .where('id', '==', idTo)
+      .where('uid', '==', idTo)
       .get()
       .then(querySnapshot => {
         querySnapshot.forEach(userTo => {
-          console.log(`Found user to: ${userTo.data().name})
+
           if (userTo.data().token !== idFrom) {
             // Get info user from (sent)
             admin
               .firestore()
               .collection('users')
-              .where('id', '==', idFrom)
+              .where('uid', '==', idFrom)
               .get()
               .then(querySnapshot2 => {
                 querySnapshot2.forEach(userFrom => {
@@ -54,7 +54,7 @@ exports.sendNotification = functions.firestore
                 })
               })
           } else {
-            console.log('Can not find pushToken target user')
+            console.log('Can not find pushToken target user ')
           }
         })
       })
