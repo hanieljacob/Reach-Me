@@ -1,23 +1,26 @@
 import 'dart:convert';
 import 'dart:io';
+
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:firebase_messaging/firebase_messaging.dart';
 import 'package:flutter/cupertino.dart';
+import 'package:flutter/material.dart';
 import 'package:flutter_local_notifications/flutter_local_notifications.dart';
+import 'package:geolocator/geolocator.dart';
+import 'package:provider/provider.dart';
 import 'package:reach_me/components/PostCard.dart';
 import 'package:reach_me/firebase_auth.dart';
-import 'package:flutter/material.dart';
 import 'package:reach_me/models/Post.dart';
 import 'package:reach_me/models/User.dart';
 import 'package:reach_me/screens/chat.dart';
-import 'search.dart';
-import 'post.dart';
-import 'notifications.dart';
-import 'account.dart';
+import 'package:reach_me/screens/map.dart';
 
-import 'package:provider/provider.dart';
 import '../services/database.dart';
+import 'account.dart';
+import 'notifications.dart';
+import 'post.dart';
+import 'search.dart';
 
 class HomePage extends StatefulWidget {
   final int index;
@@ -27,6 +30,7 @@ class HomePage extends StatefulWidget {
 }
 
 class _HomePageState extends State<HomePage> {
+  Position currentPosition;
   FirebaseMessaging _firebaseMessaging = FirebaseMessaging();
   List<Post> post = [];
   int _selectedIndex = 0;
@@ -51,6 +55,20 @@ class _HomePageState extends State<HomePage> {
     super.initState();
     firebaseCloudMessaging_Listeners();
     configLocalNotification();
+    _getCurrentLocation();
+  }
+
+  void _getCurrentLocation() {
+    final Geolocator geolocator = Geolocator()..forceAndroidLocationManager;
+    geolocator
+        .getCurrentPosition(desiredAccuracy: LocationAccuracy.best)
+        .then((Position position) {
+      setState(() {
+        currentPosition = position;
+      });
+    }).catchError((e) {
+      print(e);
+    });
   }
 
   void showNotification(message) async {
@@ -123,6 +141,7 @@ class _HomePageState extends State<HomePage> {
       reload(
         user.uid,
       );
+
       firstTime = false;
     }
     return _selectedIndex == 0
@@ -130,7 +149,10 @@ class _HomePageState extends State<HomePage> {
             backgroundColor: Colors.grey[100],
             appBar: AppBar(
               leading: IconButton(
-                onPressed: () {},
+                onPressed: () {
+                  Navigator.push(context,
+                      MaterialPageRoute(builder: (context) => MapScreen()));
+                },
                 icon: Icon(
                   Icons.public,
                   color: Colors.white,
@@ -159,30 +181,29 @@ class _HomePageState extends State<HomePage> {
                 return await Future.delayed(Duration(seconds: 2));
               },
               child: StreamBuilder<Object>(
-                stream: Firestore.instance.collection('Users').snapshots(),
-                builder: (context, snapshot) {
-                  return CustomScrollView(
-                    slivers: <Widget>[
-                      SliverList(
-                        delegate: SliverChildBuilderDelegate(
-                            (BuildContext context, int index) {
-                          return post.length == 0
-                              ? Center(
-                                  child: Padding(
-                                    padding: const EdgeInsets.only(top: 40.0),
-                                    child: Text('No Post'),
-                                  ),
-                                )
-                              : PostCard(
-                                  post: post[index],
-                                  accountsPage: false,
-                                );
-                        }, childCount: post.length == 0 ? 1 : post.length),
-                      )
-                    ],
-                  );
-                }
-              ),
+                  stream: Firestore.instance.collection('Users').snapshots(),
+                  builder: (context, snapshot) {
+                    return CustomScrollView(
+                      slivers: <Widget>[
+                        SliverList(
+                          delegate: SliverChildBuilderDelegate(
+                              (BuildContext context, int index) {
+                            return post.length == 0
+                                ? Center(
+                                    child: Padding(
+                                      padding: const EdgeInsets.only(top: 40.0),
+                                      child: Text('No Post'),
+                                    ),
+                                  )
+                                : PostCard(
+                                    post: post[index],
+                                    accountsPage: false,
+                                  );
+                          }, childCount: post.length == 0 ? 1 : post.length),
+                        )
+                      ],
+                    );
+                  }),
             ),
           )
         : _selectedIndex == 1

@@ -4,9 +4,10 @@ import 'dart:math';
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:firebase_storage/firebase_storage.dart';
+import 'package:geolocator/geolocator.dart';
 import 'package:reach_me/models/Message.dart';
-
 import 'package:reach_me/models/Post.dart';
+
 import '../models/User.dart';
 
 class Database {
@@ -17,8 +18,14 @@ class Database {
   String getRandomString(int length) => String.fromCharCodes(Iterable.generate(
       length, (_) => _chars.codeUnitAt(_rnd.nextInt(_chars.length))));
   final FirebaseStorage _firebaseStorage =
-  FirebaseStorage(storageBucket: 'gs://reach-me-23758.appspot.com');
+      FirebaseStorage(storageBucket: 'gs://reach-me-23758.appspot.com');
   StorageUploadTask _storageUploadTask;
+
+  Future storeLocation(String uid, Position position) {
+    userRef
+        .document(uid)
+        .updateData({'Lat': position.latitude, 'Lng': position.longitude});
+  }
 
   User createUser(
       String name,
@@ -57,7 +64,7 @@ class Database {
         'requests': [],
         'requested': [],
         'saved': [],
-        'token' : token
+        'token': token
       });
     }
   }
@@ -69,17 +76,16 @@ class Database {
       if (userUid != element.documentID) {
         users.add(
           createUser(
-            element.data['name'],
-            element.data['uid'],
-            element.data['userphoto'],
-            element.data['posts'],
-            element.data['followers'],
-            element.data['following'],
-            element.data['requests'],
-            element.data['requested'],
-            element.data['saved'],
-            element.data['token']
-          ),
+              element.data['name'],
+              element.data['uid'],
+              element.data['userphoto'],
+              element.data['posts'],
+              element.data['followers'],
+              element.data['following'],
+              element.data['requests'],
+              element.data['requested'],
+              element.data['saved'],
+              element.data['token']),
         );
       }
     });
@@ -618,7 +624,8 @@ class Database {
     return (time);
   }
 
-  Future chatImageUpload({String chatId, File file, String fromUid, String toUid}) async{
+  Future chatImageUpload(
+      {String chatId, File file, String fromUid, String toUid}) async {
     var task;
     String time = Timestamp.now().millisecondsSinceEpoch.toString();
     String filePath = 'chat/$chatId/$time.png';
@@ -634,7 +641,6 @@ class Database {
       'type': 1,
     });
   }
-
 
   Future deletePost(String postUser, String postId) async {
     List posts = [];
