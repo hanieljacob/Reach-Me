@@ -4,15 +4,16 @@ import 'dart:math';
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:firebase_storage/firebase_storage.dart';
-import 'package:geolocator/geolocator.dart';
 import 'package:reach_me/models/Message.dart';
 import 'package:reach_me/models/Post.dart';
+import 'package:reach_me/models/UserLoc.dart';
 
 import '../models/User.dart';
 
 class Database {
   CollectionReference userRef = Firestore.instance.collection("Users");
   CollectionReference msgRef = Firestore.instance.collection("Messages");
+  CollectionReference locRef = Firestore.instance.collection("Locations");
   var _chars = 'AaBbCcDdEeFfGgHhIiJjKkLlMmNnOoPpQqRrSsTtUuVvWwXxYyZz1234567890';
   Random _rnd = Random();
   String getRandomString(int length) => String.fromCharCodes(Iterable.generate(
@@ -21,10 +22,10 @@ class Database {
       FirebaseStorage(storageBucket: 'gs://reach-me-23758.appspot.com');
   StorageUploadTask _storageUploadTask;
 
-  Future storeLocation(String uid, Position position) {
-    userRef
+  Future storeLocation(String uid, double latitude, double longitude) {
+    locRef
         .document(uid)
-        .updateData({'Lat': position.latitude, 'Lng': position.longitude});
+        .updateData({'Latitude': latitude, 'Longitude': longitude});
   }
 
   User createUser(
@@ -52,8 +53,34 @@ class Database {
     );
   }
 
-  Future createNewUserData(FirebaseUser user, String token) async {
+  Future getFollowingLocation(String uid) async {
+    List following = [];
+    List<UserLoc> userLocation = [];
+    await userRef.document(uid).get().then((value) {
+      following = value.data['following'];
+    });
+    await locRef.getDocuments().then((value) {
+      value.documents.forEach((element) {
+        if (following.contains(element.documentID) || element.documentID == uid)
+          userLocation.add(UserLoc(
+              latitude: element.data['Latitude'],
+              longitude: element.data['Longitude'],
+              userPhoto: element.data['userphoto'],
+              username: element.data['name']));
+      });
+    });
+    return userLocation;
+  }
+
+  Future createNewUserData(FirebaseUser user, String token, double latitude,
+      double longitude) async {
     if (await userRef.document(user.uid).get().then((value) => !value.exists)) {
+      await locRef.document(user.uid).setData({
+        'Latitude': latitude,
+        'Longitude': longitude,
+        'name': user.displayName,
+        'userphoto': user.photoUrl,
+      });
       return await userRef.document(user.uid).setData({
         "uid": user.uid,
         "posts": [],

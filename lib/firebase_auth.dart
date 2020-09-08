@@ -1,7 +1,8 @@
+import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:firebase_messaging/firebase_messaging.dart';
 import 'package:google_sign_in/google_sign_in.dart';
-import 'package:cloud_firestore/cloud_firestore.dart';
+import 'package:location/location.dart';
 
 import './services/database.dart';
 
@@ -41,6 +42,7 @@ class AuthProvider {
 
   Future<bool> loginWithGoogle() async {
     try {
+      LocationData location = await Location().getLocation();
       account = await googleSignIn.signIn();
       // PostPage postPage = PostPage();
 
@@ -48,7 +50,8 @@ class AuthProvider {
       res = await _auth.signInWithCredential(GoogleAuthProvider.getCredential(
           idToken: (await account.authentication).idToken,
           accessToken: (await account.authentication).accessToken));
-      db.createNewUserData(res.user, await _firebaseMessaging.getToken());
+      db.createNewUserData(res.user, await _firebaseMessaging.getToken(),
+          location.latitude, location.longitude);
 //      firestoreInstance.collection("Users").document(res.user.uid).setData({});
 //      Uid = res.user.uid;
 //      postPage.storeUserId(res.user.uid);

@@ -150,8 +150,12 @@ class _HomePageState extends State<HomePage> {
             appBar: AppBar(
               leading: IconButton(
                 onPressed: () {
-                  Navigator.push(context,
-                      MaterialPageRoute(builder: (context) => MapScreen()));
+                  Navigator.push(
+                      context,
+                      MaterialPageRoute(
+                          builder: (context) => MapScreen(
+                                uid: user.uid,
+                              )));
                 },
                 icon: Icon(
                   Icons.public,
