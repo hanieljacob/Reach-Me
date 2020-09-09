@@ -228,7 +228,7 @@ class _Map2State extends State<Map2> {
                         ),
                       ),
                       ClipRRect(
-                        borderRadius: BorderRadius.circular(10),
+                        borderRadius: BorderRadius.circular(8),
                         child: Container(
                           padding: EdgeInsets.all(8.0),
                           color: Colors.blue,
