@@ -13,8 +13,6 @@ import 'package:reach_me/screens/profile.dart';
 import 'package:reach_me/services/database.dart';
 import 'package:reach_me/services/location.dart';
 
-
-
 //class MapScreen extends StatefulWidget {
 //  final String uid;
 //  MapScreen({this.uid});
@@ -169,7 +167,6 @@ class Map2 extends StatefulWidget {
 class _Map2State extends State<Map2> {
   Database db = Database();
 
-
   List<Marker> createNewMarker(List<DocumentSnapshot> loc) {
     List<Marker> markers = [];
     loc.forEach((element) {
@@ -185,12 +182,43 @@ class _Map2State extends State<Map2> {
               child: Scaffold(
                 backgroundColor: Colors.transparent,
                 body: GestureDetector(
-                  onTap: (){
-                    Scaffold.of(context).removeCurrentSnackBar(reason: SnackBarClosedReason.remove);
-                  Scaffold.of(context).showSnackBar(SnackBar(content: Text(element['name']+"\n"+"Latitude: "+element['Latitude'].toString()+"\n"+"Longitude: "+element['Longitude'].toString()+"\n"+"Updated "+db.convertTime(Timestamp.fromMillisecondsSinceEpoch(element['time'])),style: TextStyle(fontSize: 16),),backgroundColor: Colors.blue,
-                  duration: Duration(seconds: 5),
-                  action: widget.uid!=element.documentID?SnackBarAction(label: "Go to Profile",textColor: Colors.white,onPressed: (){Navigator.push(context, MaterialPageRoute(builder: (context) => ProfilePage(user: widget.user,uid: element.documentID,)));},):null,
-                  ));},
+                  onTap: () {
+                    Scaffold.of(context).removeCurrentSnackBar(
+                        reason: SnackBarClosedReason.remove);
+                    Scaffold.of(context).showSnackBar(SnackBar(
+                      content: Text(
+                        element['name'] +
+                            "\n" +
+                            "Latitude: " +
+                            element['Latitude'].toString() +
+                            "\n" +
+                            "Longitude: " +
+                            element['Longitude'].toString() +
+                            "\n" +
+                            "Updated " +
+                            db.convertTime(Timestamp.fromMillisecondsSinceEpoch(
+                                element['time'])),
+                        style: TextStyle(fontSize: 16),
+                      ),
+                      backgroundColor: Colors.blue,
+                      duration: Duration(seconds: 5),
+                      action: widget.uid != element.documentID
+                          ? SnackBarAction(
+                              label: "Go to Profile",
+                              textColor: Colors.white,
+                              onPressed: () {
+                                Navigator.push(
+                                    context,
+                                    MaterialPageRoute(
+                                        builder: (context) => ProfilePage(
+                                              user: widget.user,
+                                              uid: element.documentID,
+                                            )));
+                              },
+                            )
+                          : null,
+                    ));
+                  },
                   child: Column(
                     crossAxisAlignment: CrossAxisAlignment.center,
                     children: [
@@ -199,15 +227,21 @@ class _Map2State extends State<Map2> {
                           element['userphoto'],
                         ),
                       ),
-                      Container(
-                        padding: EdgeInsets.all(8.0),
-                        color: Colors.blue,
-                        child: Text(
-                            "Updated "+db.convertTime(Timestamp.fromMillisecondsSinceEpoch(element['time'])),
-                          style: TextStyle(
-                            color: Colors.white,
-                            fontSize: 12,
-                            fontStyle: FontStyle.italic,
+                      ClipRRect(
+                        borderRadius: BorderRadius.circular(10),
+                        child: Container(
+                          padding: EdgeInsets.all(8.0),
+                          color: Colors.blue,
+                          child: Text(
+                            "Updated " +
+                                db.convertTime(
+                                    Timestamp.fromMillisecondsSinceEpoch(
+                                        element['time'])),
+                            style: TextStyle(
+                              color: Colors.white,
+                              fontSize: 12,
+                              fontStyle: FontStyle.italic,
+                            ),
                           ),
                         ),
                       ),
@@ -244,50 +278,50 @@ class _Map2State extends State<Map2> {
     return userLocation == null
         ? Loading()
         : Scaffold(
-      appBar: AppBar(
-        title: Text("Map"),
-      ),
-      body: StreamBuilder(
-        stream: Firestore.instance.collection('Locations').snapshots(),
-        builder: (context, snapshot) {
-          DocumentSnapshot userSnap;
-          List<DocumentSnapshot> snaps;
-          if (snapshot.hasData) {
-            snaps = snapshot.data.documents;
-            snaps.forEach((element) {
-              if (element.documentID == widget.uid) {
-                userSnap = element;
-              }
-            });
-          }
-          return snapshot.hasData
-              ? Container(
-            height: MediaQuery.of(context).size.height,
-            width: MediaQuery.of(context).size.width,
-            child: FlutterMap(
-              options: MapOptions(
-                center: LatLng(
-                    userSnap['Latitude'], userSnap['Longitude']),
-                minZoom: 0,
-                maxZoom: 19.0,
-              ),
-              layers: [
-                TileLayerOptions(
+            appBar: AppBar(
+              title: Text("Map"),
+            ),
+            body: StreamBuilder(
+              stream: Firestore.instance.collection('Locations').snapshots(),
+              builder: (context, snapshot) {
+                DocumentSnapshot userSnap;
+                List<DocumentSnapshot> snaps;
+                if (snapshot.hasData) {
+                  snaps = snapshot.data.documents;
+                  snaps.forEach((element) {
+                    if (element.documentID == widget.uid) {
+                      userSnap = element;
+                    }
+                  });
+                }
+                return snapshot.hasData
+                    ? Container(
+                        height: MediaQuery.of(context).size.height,
+                        width: MediaQuery.of(context).size.width,
+                        child: FlutterMap(
+                          options: MapOptions(
+                            center: LatLng(
+                                userSnap['Latitude'], userSnap['Longitude']),
+                            minZoom: 0,
+                            maxZoom: 19.0,
+                          ),
+                          layers: [
+                            TileLayerOptions(
 //                        urlTemplate:
 //                        'https://api.openrouteservice.org/mapsurfer/{z}/{x}/{y}.png?api_key=omitted',
-                    urlTemplate:
-                    'https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png',
-                    subdomains: ['a', 'b', 'c'],
-                    keepBuffer: 20),
-                new MarkerLayerOptions(
-                  markers: createNewMarker(snaps),
-                ),
-              ],
+                                urlTemplate:
+                                    'https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png',
+                                subdomains: ['a', 'b', 'c'],
+                                keepBuffer: 20),
+                            new MarkerLayerOptions(
+                              markers: createNewMarker(snaps),
+                            ),
+                          ],
+                        ),
+                      )
+                    : Loading();
+              },
             ),
-          )
-              : Loading();
-        },
-      ),
-    );
+          );
   }
 }
