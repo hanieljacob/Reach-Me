@@ -155,6 +155,7 @@ class _HomePageState extends State<HomePage> {
                       MaterialPageRoute(
                           builder: (context) => MapScreen(
                                 uid: user.uid,
+                                user: user2,
                               )));
                 },
                 icon: Icon(

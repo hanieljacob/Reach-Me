@@ -25,7 +25,7 @@ class Database {
   Future storeLocation(String uid, double latitude, double longitude) {
     locRef
         .document(uid)
-        .updateData({'Latitude': latitude, 'Longitude': longitude});
+        .updateData({'Latitude': latitude, 'Longitude': longitude,'time':DateTime.now().millisecondsSinceEpoch});
   }
 
   User createUser(
@@ -80,6 +80,7 @@ class Database {
         'Longitude': longitude,
         'name': user.displayName,
         'userphoto': user.photoUrl,
+        'time': DateTime.now().millisecondsSinceEpoch,
       });
       return await userRef.document(user.uid).setData({
         "uid": user.uid,
