@@ -1,12 +1,16 @@
+import 'dart:math';
+
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_map/flutter_map.dart';
-import 'package:geolocator/geolocator.dart';
+import 'package:geocoding/geocoding.dart';
+
 import 'package:latlong/latlong.dart';
 import 'package:provider/provider.dart';
 import 'package:reach_me/components/loading.dart';
+import 'package:reach_me/models/User.dart';
 import 'package:reach_me/models/UserLoc.dart';
 import 'package:reach_me/models/UserLocation.dart';
 import 'package:reach_me/screens/profile.dart';
@@ -115,20 +119,6 @@ import 'package:reach_me/services/location.dart';
 //  }
 //}
 
-import 'package:cloud_firestore/cloud_firestore.dart';
-import 'package:firebase_auth/firebase_auth.dart';
-import 'package:flutter/material.dart';
-import 'package:flutter_map/flutter_map.dart';
-import 'package:geolocator/geolocator.dart';
-import 'package:latlong/latlong.dart';
-import 'package:provider/provider.dart';
-import 'package:reach_me/components/loading.dart';
-import 'package:reach_me/models/User.dart';
-import 'package:reach_me/models/UserLoc.dart';
-import 'package:reach_me/models/UserLocation.dart';
-import 'package:reach_me/services/database.dart';
-import 'package:reach_me/services/location.dart';
-
 class MapScreen extends StatefulWidget {
   final String uid;
   final User user;
@@ -138,9 +128,7 @@ class MapScreen extends StatefulWidget {
 }
 
 class _MapScreenState extends State<MapScreen> {
-  Position position;
   Database db = Database();
-  LocationOptions locationOptions = LocationOptions();
   MapController controller = MapController();
   List<UserLoc> userLocation = [];
 
@@ -166,8 +154,30 @@ class Map2 extends StatefulWidget {
 
 class _Map2State extends State<Map2> {
   Database db = Database();
+  Distance dist = Distance();
 
-  List<Marker> createNewMarker(List<DocumentSnapshot> loc) {
+  Future<Placemark> getPlace(double lat, double long) async {
+    List<Placemark> places = await placemarkFromCoordinates(lat, long);
+    return places[0];
+  }
+
+  double calculateDistance(lat, lng, lat1, lng2) {
+    // var p = 0.017453292519943295;
+    // var c = cos;
+    // var a = 0.5 -
+    //     c((lat2 - lat1) * p) / 2 +
+    //     c(lat1 * p) * c(lat2 * p) * (1 - c((lon2 - lon1) * p)) / 2;
+    // return 12742 * asin(sqrt(a));
+    return dist.as(
+      LengthUnit.Kilometer,
+      LatLng(lat, lng),
+      LatLng(lat1, lng2),
+    );
+  }
+
+  List<Marker> createNewMarker(
+      List<DocumentSnapshot> loc, DocumentSnapshot userSnap) {
+    // print('Hello');
     List<Marker> markers = [];
     loc.forEach((element) {
       if (widget.user.following.contains(element.documentID) ||
@@ -182,42 +192,55 @@ class _Map2State extends State<Map2> {
               child: Scaffold(
                 backgroundColor: Colors.transparent,
                 body: GestureDetector(
-                  onTap: () {
-                    Scaffold.of(context).removeCurrentSnackBar(
-                        reason: SnackBarClosedReason.remove);
-                    Scaffold.of(context).showSnackBar(SnackBar(
-                      content: Text(
-                        element['name'] +
-                            "\n" +
-                            "Latitude: " +
-                            element['Latitude'].toString() +
-                            "\n" +
-                            "Longitude: " +
-                            element['Longitude'].toString() +
-                            "\n" +
-                            "Updated " +
-                            db.convertTime(Timestamp.fromMillisecondsSinceEpoch(
-                                element['time'])),
-                        style: TextStyle(fontSize: 16),
-                      ),
-                      backgroundColor: Colors.blue,
-                      duration: Duration(seconds: 5),
-                      action: widget.uid != element.documentID
-                          ? SnackBarAction(
-                              label: "Go to Profile",
-                              textColor: Colors.white,
-                              onPressed: () {
-                                Navigator.push(
+                  onTap: () async {
+                    getPlace(
+                      double.parse(element['Latitude'].toString()),
+                      double.parse(element['Longitude'].toString()),
+                    ).then((value) {
+                      Scaffold.of(context).removeCurrentSnackBar(
+                          reason: SnackBarClosedReason.remove);
+
+                      Scaffold.of(context).showSnackBar(SnackBar(
+                        content: Text(
+                          element['name'] +
+                              "\n" +
+                              value.subLocality +
+                              "\n" +
+                              calculateDistance(
+                                userSnap['Latitude'],
+                                userSnap['Longitude'],
+                                element['Latitude'],
+                                element['Longitude'],
+                              ).toString() +
+                              " Kms Away" +
+                              "\n" +
+                              "Updated " +
+                              db.convertTime(
+                                  Timestamp.fromMillisecondsSinceEpoch(
+                                      element['time'])),
+                          style: TextStyle(fontSize: 16),
+                        ),
+                        backgroundColor: Colors.blue,
+                        duration: Duration(seconds: 5),
+                        action: widget.uid != element.documentID
+                            ? SnackBarAction(
+                                label: "Go to Profile",
+                                textColor: Colors.white,
+                                onPressed: () {
+                                  Navigator.push(
                                     context,
                                     MaterialPageRoute(
-                                        builder: (context) => ProfilePage(
-                                              user: widget.user,
-                                              uid: element.documentID,
-                                            )));
-                              },
-                            )
-                          : null,
-                    ));
+                                      builder: (context) => ProfilePage(
+                                        user: widget.user,
+                                        uid: element.documentID,
+                                      ),
+                                    ),
+                                  );
+                                },
+                              )
+                            : null,
+                      ));
+                    });
                   },
                   child: Column(
                     crossAxisAlignment: CrossAxisAlignment.center,
@@ -314,7 +337,7 @@ class _Map2State extends State<Map2> {
                                 subdomains: ['a', 'b', 'c'],
                                 keepBuffer: 20),
                             new MarkerLayerOptions(
-                              markers: createNewMarker(snaps),
+                              markers: createNewMarker(snaps, userSnap),
                             ),
                           ],
                         ),

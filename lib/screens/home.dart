@@ -7,7 +7,7 @@ import 'package:firebase_messaging/firebase_messaging.dart';
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_local_notifications/flutter_local_notifications.dart';
-import 'package:geolocator/geolocator.dart';
+
 import 'package:provider/provider.dart';
 import 'package:reach_me/components/PostCard.dart';
 import 'package:reach_me/firebase_auth.dart';
@@ -30,7 +30,6 @@ class HomePage extends StatefulWidget {
 }
 
 class _HomePageState extends State<HomePage> {
-  Position currentPosition;
   FirebaseMessaging _firebaseMessaging = FirebaseMessaging();
   List<Post> post = [];
   int _selectedIndex = 0;
@@ -55,20 +54,6 @@ class _HomePageState extends State<HomePage> {
     super.initState();
     firebaseCloudMessaging_Listeners();
     configLocalNotification();
-    _getCurrentLocation();
-  }
-
-  void _getCurrentLocation() {
-    final Geolocator geolocator = Geolocator()..forceAndroidLocationManager;
-    geolocator
-        .getCurrentPosition(desiredAccuracy: LocationAccuracy.best)
-        .then((Position position) {
-      setState(() {
-        currentPosition = position;
-      });
-    }).catchError((e) {
-      print(e);
-    });
   }
 
   void showNotification(message) async {
