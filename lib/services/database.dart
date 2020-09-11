@@ -15,6 +15,7 @@ class Database {
   CollectionReference msgRef = Firestore.instance.collection("Messages");
   CollectionReference locRef = Firestore.instance.collection("Locations");
   CollectionReference notRef = Firestore.instance.collection("Notifications");
+  CollectionReference groupRef = Firestore.instance.collection("Groups");
   var _chars = 'AaBbCcDdEeFfGgHhIiJjKkLlMmNnOoPpQqRrSsTtUuVvWwXxYyZz1234567890';
   Random _rnd = Random();
   String getRandomString(int length) => String.fromCharCodes(Iterable.generate(
@@ -544,6 +545,16 @@ class Database {
       }
     });
     return reqUsers;
+  }
+
+  Future createGroup(String uid, List<String> uids, String name) {
+    String str = getRandomString(20);
+    groupRef.document(str).setData({
+      'admin': [uid],
+      'members': uids,
+      'time': DateTime.now(),
+      'name': name
+    });
   }
 
   Future getFollowers(List followers) async {

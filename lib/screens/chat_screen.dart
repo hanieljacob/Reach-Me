@@ -13,7 +13,8 @@ import 'package:reach_me/services/database.dart';
 class ChatScreen extends StatefulWidget {
   final DocumentSnapshot user2;
   final User user;
-  ChatScreen({this.user, this.user2});
+  final Function callback;
+  ChatScreen({this.user, this.user2, this.callback});
   @override
   _ChatScreenState createState() => _ChatScreenState();
 }
@@ -196,8 +197,13 @@ class _ChatScreenState extends State<ChatScreen> {
     return SafeArea(
       child: Scaffold(
         appBar: AppBar(
-          title: Text(user2.name),
-        ),
+            title: Text(user2.name),
+            leading: IconButton(
+              icon: Icon(Icons.arrow_back),
+              onPressed: () {
+                Navigator.pop(context);
+              },
+            )),
         body: StreamBuilder(
           stream: Firestore.instance
               .collection('Messages')
