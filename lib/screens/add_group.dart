@@ -2,6 +2,7 @@ import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 import 'package:reach_me/models/User.dart';
+import 'package:reach_me/screens/create_group.dart';
 
 class SelectListTile {
   DocumentSnapshot user;
@@ -23,14 +24,38 @@ class _AddGroupState extends State<AddGroup> {
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
-        title: Text(
-          'Select group members',
+        title: Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          mainAxisAlignment: MainAxisAlignment.start,
+          children: [
+            Text(
+              'Select group members',
+            ),
+            Padding(
+              padding: const EdgeInsets.only(top:8.0),
+              child: Text(
+                  selectedUids.length.toString()+" members selected",
+                  style: TextStyle(
+                    fontSize: 12.0,
+                    fontWeight: FontWeight.normal
+                  ),
+              ),
+            )
+          ],
         ),
+
       ),
       floatingActionButton: FloatingActionButton(
         child: Icon(Icons.group_add),
         onPressed: () {
           print(selectedUids.toString());
+          Navigator.push(
+              context,
+              MaterialPageRoute(
+                  builder: (context) => CreateGroup(
+                    user: widget.user,
+                    selectedUids: selectedUids,
+                  )));
         },
       ),
       body: StreamBuilder<QuerySnapshot>(
@@ -44,8 +69,9 @@ class _AddGroupState extends State<AddGroup> {
                         widget.user.following.contains(docs[index]['uid'])
                     ? Container(
                         color:
-                            list[index].isSelected ? Colors.blue : Colors.white,
+                            list[index].isSelected ? Colors.blue : Colors.transparent,
                         child: ListTile(
+                          trailing: list[index].isSelected?Text("SELECTED",style: TextStyle(color: Colors.white,fontWeight: FontWeight.bold,letterSpacing: 1.1),):SizedBox.shrink(),
                           onTap: () {
                             setState(() {
                               list[index].isSelected =
