@@ -1,12 +1,8 @@
-import 'dart:math';
-
 import 'package:cloud_firestore/cloud_firestore.dart';
-import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_map/flutter_map.dart';
 import 'package:geocoding/geocoding.dart';
-
 import 'package:latlong/latlong.dart';
 import 'package:provider/provider.dart';
 import 'package:reach_me/components/loading.dart';
@@ -193,54 +189,47 @@ class _Map2State extends State<Map2> {
                 backgroundColor: Colors.transparent,
                 body: GestureDetector(
                   onTap: () async {
-                    getPlace(
-                      double.parse(element['Latitude'].toString()),
-                      double.parse(element['Longitude'].toString()),
-                    ).then((value) {
-                      Scaffold.of(context).removeCurrentSnackBar(
-                          reason: SnackBarClosedReason.remove);
+                    if (widget.uid != element.documentID)
+                      getPlace(
+                        double.parse(element['Latitude'].toString()),
+                        double.parse(element['Longitude'].toString()),
+                      ).then((value) {
+                        Scaffold.of(context).removeCurrentSnackBar(
+                            reason: SnackBarClosedReason.remove);
 
-                      Scaffold.of(context).showSnackBar(SnackBar(
-                        content: Text(
-                          element['name'] +
-                              "\n" +
-                              value.subLocality +
-                              "\n" +
-                              calculateDistance(
-                                userSnap['Latitude'],
-                                userSnap['Longitude'],
-                                element['Latitude'],
-                                element['Longitude'],
-                              ).toString() +
-                              " Kms Away" +
-                              "\n" +
-                              "Updated " +
-                              db.convertTime(
-                                  Timestamp.fromMillisecondsSinceEpoch(
-                                      element['time'])),
-                          style: TextStyle(fontSize: 16),
-                        ),
-                        backgroundColor: Colors.blue,
-                        duration: Duration(seconds: 5),
-                        action: widget.uid != element.documentID
-                            ? SnackBarAction(
-                                label: "Go to Profile",
-                                textColor: Colors.white,
-                                onPressed: () {
-                                  Navigator.push(
-                                    context,
-                                    MaterialPageRoute(
-                                      builder: (context) => ProfilePage(
-                                        user: widget.user,
-                                        uid: element.documentID,
-                                      ),
+                        Scaffold.of(context).showSnackBar(SnackBar(
+                            content: Text(
+                              element['name'] +
+                                  "\n" +
+                                  value.subLocality +
+                                  "\n" +
+                                  calculateDistance(
+                                    userSnap['Latitude'],
+                                    userSnap['Longitude'],
+                                    element['Latitude'],
+                                    element['Longitude'],
+                                  ).toString() +
+                                  " Kms Away",
+                              style: TextStyle(fontSize: 16),
+                            ),
+                            backgroundColor: Colors.blue,
+                            duration: Duration(seconds: 5),
+                            action: SnackBarAction(
+                              label: "Go to Profile",
+                              textColor: Colors.white,
+                              onPressed: () {
+                                Navigator.push(
+                                  context,
+                                  MaterialPageRoute(
+                                    builder: (context) => ProfilePage(
+                                      user: widget.user,
+                                      uid: element.documentID,
                                     ),
-                                  );
-                                },
-                              )
-                            : null,
-                      ));
-                    });
+                                  ),
+                                );
+                              },
+                            )));
+                      });
                   },
                   child: Column(
                     crossAxisAlignment: CrossAxisAlignment.center,
@@ -250,24 +239,25 @@ class _Map2State extends State<Map2> {
                           element['userphoto'],
                         ),
                       ),
-                      ClipRRect(
-                        borderRadius: BorderRadius.circular(8),
-                        child: Container(
-                          padding: EdgeInsets.all(8.0),
-                          color: Colors.blue,
-                          child: Text(
-                            "Updated " +
-                                db.convertTime(
-                                    Timestamp.fromMillisecondsSinceEpoch(
-                                        element['time'])),
-                            style: TextStyle(
-                              color: Colors.white,
-                              fontSize: 12,
-                              fontStyle: FontStyle.italic,
+                      if (widget.uid != element.documentID)
+                        ClipRRect(
+                          borderRadius: BorderRadius.circular(8),
+                          child: Container(
+                            padding: EdgeInsets.all(8.0),
+                            color: Colors.blue,
+                            child: Text(
+                              "Updated " +
+                                  db.convertTime(
+                                      Timestamp.fromMillisecondsSinceEpoch(
+                                          element['time'])),
+                              style: TextStyle(
+                                color: Colors.white,
+                                fontSize: 12,
+                                fontStyle: FontStyle.italic,
+                              ),
                             ),
                           ),
                         ),
-                      ),
                     ],
                   ),
                 ),

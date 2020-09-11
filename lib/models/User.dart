@@ -8,6 +8,7 @@ class User {
   List requests;
   List requested;
   List saved;
+  List chatIds;
   String token;
   User({
     this.name,
@@ -20,5 +21,6 @@ class User {
     this.requested,
     this.saved,
     this.token,
+    this.chatIds,
   });
 }

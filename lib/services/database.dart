@@ -14,6 +14,7 @@ class Database {
   CollectionReference userRef = Firestore.instance.collection("Users");
   CollectionReference msgRef = Firestore.instance.collection("Messages");
   CollectionReference locRef = Firestore.instance.collection("Locations");
+  CollectionReference notRef = Firestore.instance.collection("Notifications");
   var _chars = 'AaBbCcDdEeFfGgHhIiJjKkLlMmNnOoPpQqRrSsTtUuVvWwXxYyZz1234567890';
   Random _rnd = Random();
   String getRandomString(int length) => String.fromCharCodes(Iterable.generate(
@@ -23,9 +24,11 @@ class Database {
   StorageUploadTask _storageUploadTask;
 
   Future storeLocation(String uid, double latitude, double longitude) {
-    locRef
-        .document(uid)
-        .updateData({'Latitude': latitude, 'Longitude': longitude,'time':DateTime.now().millisecondsSinceEpoch});
+    locRef.document(uid).updateData({
+      'Latitude': latitude,
+      'Longitude': longitude,
+      'time': DateTime.now().millisecondsSinceEpoch
+    });
   }
 
   User createUser(
@@ -38,7 +41,8 @@ class Database {
       List requests,
       List requested,
       List saved,
-      String token) {
+      String token,
+      List chatIds) {
     return User(
       name: name,
       uid: uid,
@@ -50,6 +54,7 @@ class Database {
       requested: requested,
       saved: saved,
       token: token,
+      chatIds: chatIds,
     );
   }
 
@@ -92,7 +97,8 @@ class Database {
         'requests': [],
         'requested': [],
         'saved': [],
-        'token': token
+        'token': token,
+        'chatIds': [],
       });
     }
   }
@@ -113,7 +119,8 @@ class Database {
               element.data['requests'],
               element.data['requested'],
               element.data['saved'],
-              element.data['token']),
+              element.data['token'],
+              element.data['chatIds']),
         );
       }
     });
@@ -129,17 +136,17 @@ class Database {
     result.documents.forEach((element) {
       if (userUid == element.documentID) {
         user = createUser(
-          element.data['name'],
-          element.data['uid'],
-          element.data['userphoto'],
-          element.data['posts'],
-          element.data['followers'],
-          element.data['following'],
-          element.data['requests'],
-          element.data['requested'],
-          element.data['saved'],
-          element.data['token'],
-        );
+            element.data['name'],
+            element.data['uid'],
+            element.data['userphoto'],
+            element.data['posts'],
+            element.data['followers'],
+            element.data['following'],
+            element.data['requests'],
+            element.data['requested'],
+            element.data['saved'],
+            element.data['token'],
+            element.data['chatIds']);
       }
     });
     return user;
@@ -434,17 +441,17 @@ class Database {
       if (uid.contains(element.documentID)) {
         users.add(
           createUser(
-            element.data['name'],
-            element.data['uid'],
-            element.data['userphoto'],
-            element.data['posts'],
-            element.data['followers'],
-            element.data['following'],
-            element.data['requests'],
-            element.data['requested'],
-            element.data['saved'],
-            element.data['token'],
-          ),
+              element.data['name'],
+              element.data['uid'],
+              element.data['userphoto'],
+              element.data['posts'],
+              element.data['followers'],
+              element.data['following'],
+              element.data['requests'],
+              element.data['requested'],
+              element.data['saved'],
+              element.data['token'],
+              element.data['chatIds']),
         );
       }
     });
@@ -494,6 +501,9 @@ class Database {
     userRef.document(curUserUid).updateData({
       'requested': FieldValue.arrayUnion([reqUserUid])
     });
+    notRef
+        .document(Timestamp.now().millisecondsSinceEpoch.toString())
+        .setData({'fromUid': curUserUid, 'toUid': reqUserUid});
     // userRef
     //     .document(uid2)
     //     .get()
@@ -515,17 +525,17 @@ class Database {
     result.documents.forEach((element) {
       users.add(
         createUser(
-          element.data['name'],
-          element.data['uid'],
-          element.data['userphoto'],
-          element.data['posts'],
-          element.data['followers'],
-          element.data['following'],
-          element.data['requests'],
-          element.data['requested'],
-          element.data['saved'],
-          element.data['token'],
-        ),
+            element.data['name'],
+            element.data['uid'],
+            element.data['userphoto'],
+            element.data['posts'],
+            element.data['followers'],
+            element.data['following'],
+            element.data['requests'],
+            element.data['requested'],
+            element.data['saved'],
+            element.data['token'],
+            element.data['chatIds']),
       );
     });
     users.forEach((element) {
@@ -543,17 +553,17 @@ class Database {
     result.documents.forEach((element) {
       users.add(
         createUser(
-          element.data['name'],
-          element.data['uid'],
-          element.data['userphoto'],
-          element.data['posts'],
-          element.data['followers'],
-          element.data['following'],
-          element.data['requests'],
-          element.data['requested'],
-          element.data['saved'],
-          element.data['token'],
-        ),
+            element.data['name'],
+            element.data['uid'],
+            element.data['userphoto'],
+            element.data['posts'],
+            element.data['followers'],
+            element.data['following'],
+            element.data['requests'],
+            element.data['requested'],
+            element.data['saved'],
+            element.data['token'],
+            element.data['chatIds']),
       );
     });
     users.forEach((element) {
@@ -740,6 +750,12 @@ class Database {
       'toUid': toUid,
       'time': time,
       'type': type,
+    });
+    userRef.document(fromUid).updateData({
+      'chatIds': FieldValue.arrayUnion([chatId])
+    });
+    userRef.document(toUid).updateData({
+      'chatIds': FieldValue.arrayUnion([chatId])
     });
   }
 }

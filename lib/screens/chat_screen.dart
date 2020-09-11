@@ -39,7 +39,11 @@ class _ChatScreenState extends State<ChatScreen> {
 
     File croppedFile = await ImageCropper.cropImage(
       sourcePath: file.path,
-      aspectRatioPresets: [CropAspectRatioPreset.ratio4x3, CropAspectRatioPreset.original, CropAspectRatioPreset.square],
+      aspectRatioPresets: [
+        CropAspectRatioPreset.ratio4x3,
+        CropAspectRatioPreset.original,
+        CropAspectRatioPreset.square
+      ],
       maxWidth: 512,
       maxHeight: 512,
     );
@@ -68,7 +72,7 @@ class _ChatScreenState extends State<ChatScreen> {
     DateTime date = DateTime.fromMillisecondsSinceEpoch(millisec);
     int hour = date.hour;
     int currentMili = DateTime(DateTime.now().year, DateTime.now().month,
-        DateTime.now().day, 0, 0, 0, 0)
+            DateTime.now().day, 0, 0, 0, 0)
         .millisecondsSinceEpoch;
     String appendedTime = '';
     int difference = millisec - currentMili;
@@ -78,7 +82,7 @@ class _ChatScreenState extends State<ChatScreen> {
     else if (difference < 0 && difference >= -60000 * 60 * 24)
       appendedTime = 'Yesterday @ ';
     else {
-      if(date.month>=10)
+      if (date.month >= 10)
         appendedTime = date.day.toString() +
             '/' +
             date.month.toString() +
@@ -95,7 +99,7 @@ class _ChatScreenState extends State<ChatScreen> {
     }
     if (hour > 12) {
       hour = hour - 12;
-      if(DateTime.fromMillisecondsSinceEpoch(millisec).minute>=10)
+      if (DateTime.fromMillisecondsSinceEpoch(millisec).minute >= 10)
         appendedTime += hour.toString() +
             ':' +
             DateTime.fromMillisecondsSinceEpoch(millisec).minute.toString() +
@@ -106,23 +110,16 @@ class _ChatScreenState extends State<ChatScreen> {
             DateTime.fromMillisecondsSinceEpoch(millisec).minute.toString() +
             ' PM';
     } else {
-      if(DateTime.fromMillisecondsSinceEpoch(millisec).minute>=10)
+      if (DateTime.fromMillisecondsSinceEpoch(millisec).minute >= 10)
         appendedTime += hour.toString() +
             ':' +
-            DateTime
-                .fromMillisecondsSinceEpoch(millisec)
-                .minute
-                .toString() +
+            DateTime.fromMillisecondsSinceEpoch(millisec).minute.toString() +
             ' AM';
       else
         appendedTime += hour.toString() +
             ':0' +
-            DateTime
-                .fromMillisecondsSinceEpoch(millisec)
-                .minute
-                .toString() +
+            DateTime.fromMillisecondsSinceEpoch(millisec).minute.toString() +
             ' AM';
-
     }
     return appendedTime;
   }
@@ -130,17 +127,17 @@ class _ChatScreenState extends State<ChatScreen> {
   void createUserData(var element) {
     setState(() {
       user2 = db.createUser(
-        element['name'],
-        element['uid'],
-        element['userphoto'],
-        element['posts'],
-        element['followers'],
-        element['following'],
-        element['requests'],
-        element['requested'],
-        element['saved'],
-        element['token'],
-      );
+          element['name'],
+          element['uid'],
+          element['userphoto'],
+          element['posts'],
+          element['followers'],
+          element['following'],
+          element['requests'],
+          element['requested'],
+          element['saved'],
+          element['token'],
+          element['chatIds']);
     });
     if (widget.user.uid.hashCode <= user2.uid.hashCode)
       chatId = '${widget.user.uid}-${user2.uid}';
@@ -261,18 +258,21 @@ class _ChatScreenState extends State<ChatScreen> {
                                                 ? EdgeInsets.fromLTRB(
                                                     15.0, 10.0, 15.0, 10.0)
                                                 : EdgeInsets.all(2),
-                                            decoration: doc['type'] == 0? BoxDecoration(
-                                                color: Colors.transparent,
-                                                borderRadius: BorderRadius.only(
-                                                  topLeft: Radius.circular(8.0),
-                                                  topRight:
-                                                      Radius.circular(8.0),
-                                                  bottomRight:
-                                                      Radius.circular(8.0),
-                                                ),
-                                                border: Border.all(
-                                                    color: Colors.blue)
-                                            ) : null,
+                                            decoration: doc['type'] == 0
+                                                ? BoxDecoration(
+                                                    color: Colors.transparent,
+                                                    borderRadius:
+                                                        BorderRadius.only(
+                                                      topLeft:
+                                                          Radius.circular(8.0),
+                                                      topRight:
+                                                          Radius.circular(8.0),
+                                                      bottomRight:
+                                                          Radius.circular(8.0),
+                                                    ),
+                                                    border: Border.all(
+                                                        color: Colors.blue))
+                                                : null,
                                           ),
                                         ),
                                         Padding(
@@ -332,15 +332,20 @@ class _ChatScreenState extends State<ChatScreen> {
                                                 ? EdgeInsets.fromLTRB(
                                                     15.0, 10.0, 15.0, 10.0)
                                                 : EdgeInsets.all(2),
-                                            decoration: doc['type'] == 0? BoxDecoration(
-                                              color: Colors.blue,
-                                              borderRadius: BorderRadius.only(
-                                                topLeft: Radius.circular(8.0),
-                                                topRight: Radius.circular(8.0),
-                                                bottomLeft:
-                                                    Radius.circular(8.0),
-                                              ),
-                                            ) : null,
+                                            decoration: doc['type'] == 0
+                                                ? BoxDecoration(
+                                                    color: Colors.blue,
+                                                    borderRadius:
+                                                        BorderRadius.only(
+                                                      topLeft:
+                                                          Radius.circular(8.0),
+                                                      topRight:
+                                                          Radius.circular(8.0),
+                                                      bottomLeft:
+                                                          Radius.circular(8.0),
+                                                    ),
+                                                  )
+                                                : null,
                                           ),
                                         ),
                                         Padding(
