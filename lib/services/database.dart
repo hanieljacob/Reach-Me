@@ -547,13 +547,15 @@ class Database {
     return reqUsers;
   }
 
-  Future createGroup(String uid, List<String> uids, String name) {
+  Future createGroup(
+      String uid, List<String> uids, String name, String photourl) {
     String str = getRandomString(20);
     groupRef.document(str).setData({
       'admin': [uid],
       'members': uids,
       'time': DateTime.now(),
-      'name': name
+      'name': name,
+      'photourl': photourl
     });
   }
 
