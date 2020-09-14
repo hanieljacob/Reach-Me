@@ -197,13 +197,28 @@ class _ChatScreenState extends State<ChatScreen> {
     return SafeArea(
       child: Scaffold(
         appBar: AppBar(
-            title: Text(user2.name),
-            leading: IconButton(
-              icon: Icon(Icons.arrow_back),
-              onPressed: () {
-                Navigator.pop(context);
-              },
-            )),
+          titleSpacing: 0,
+          automaticallyImplyLeading: false,
+          title: Row(
+            mainAxisAlignment: MainAxisAlignment.start,
+            children: [
+              IconButton(
+                padding: EdgeInsets.only(right: 0, left: 0),
+                icon: Icon(Icons.arrow_back),
+                onPressed: () {
+                  Navigator.of(context).pop();
+                },
+              ),
+              CircleAvatar(
+                backgroundImage: NetworkImage(user2.photoUrl),
+              ),
+              SizedBox(
+                width: 10,
+              ),
+              Text(user2.name),
+            ],
+          ),
+        ),
         body: StreamBuilder(
           stream: Firestore.instance
               .collection('Messages')

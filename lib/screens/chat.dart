@@ -82,21 +82,44 @@ class _GroupChatState extends State<GroupChat> {
                       itemBuilder: (context, index) {
                         return !docs[index]['members'].contains(widget.user.uid)
                             ? SizedBox.shrink()
-                            : ListTile(
-                                onTap: () {
-                                  Navigator.push(
-                                      context,
-                                      MaterialPageRoute(
-                                          builder: (context) => GroupChatScreen(
-                                              doc: docs[index],
-                                              user: widget.user)));
-                                },
-                                title: Text(docs[index]['name']),
-                                leading: CircleAvatar(
-                                  backgroundImage:
-                                      NetworkImage(docs[index]['photourl']),
-                                ),
-                              );
+                            : StreamBuilder<QuerySnapshot>(
+                                stream: Firestore.instance
+                                    .collection('Groups')
+                                    .document(docs[index].documentID)
+                                    .collection(docs[index].documentID)
+                                    .orderBy('time', descending: true)
+                                    .snapshots(),
+                                builder: (context, snapshot2) {
+                                  return !snapshot2.hasData
+                                      ? SizedBox.shrink()
+                                      : ListTile(
+                                          onTap: () {
+                                            Navigator.push(
+                                                context,
+                                                MaterialPageRoute(
+                                                    builder: (context) =>
+                                                        GroupChatScreen(
+                                                            doc: docs[index],
+                                                            user:
+                                                                widget.user)));
+                                          },
+                                          title: Text(docs[index]['name']),
+                                          subtitle: snapshot2
+                                                      .data.documents.length !=
+                                                  0
+                                              ? snapshot2.data.documents[0]
+                                                          ['type'] ==
+                                                      0
+                                                  ? Text(snapshot2.data
+                                                      .documents[0]['content'])
+                                                  : Text('📷 Photo')
+                                              : SizedBox.shrink(),
+                                          leading: CircleAvatar(
+                                            backgroundImage: NetworkImage(
+                                                docs[index]['photourl']),
+                                          ),
+                                        );
+                                });
                       },
                       itemCount: docs.length,
                     )
@@ -178,8 +201,10 @@ class _ChatTabState extends State<ChatTab> {
                                   title: Text(
                                       snapshot.data.documents[index]['name']),
                                   subtitle: snapshot2.data.documents.length != 0
-                                      ? Text(snapshot2.data.documents[0]
-                                          ['content'])
+                                      ? snapshot2.data.documents[0]['type'] == 0
+                                          ? Text(snapshot2.data.documents[0]
+                                              ['content'])
+                                          : Text('📷 Photo')
                                       : SizedBox.shrink(),
                                   onTap: () async {
                                     final result = await Navigator.push(

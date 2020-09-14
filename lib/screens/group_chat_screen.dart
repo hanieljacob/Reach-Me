@@ -54,7 +54,10 @@ class _GroupChatScreenState extends State<GroupChatScreen> {
     );
 
     db.groupChatImageUpload(
-        chatId: widget.doc.documentID, fromUid: widget.user.uid, file: result);
+        chatId: widget.doc.documentID,
+        fromUid: widget.user.uid,
+        file: result,
+        name: widget.user.name);
 
     setState(() {
       _image = result;
@@ -153,7 +156,7 @@ class _GroupChatScreenState extends State<GroupChatScreen> {
             onPressed: () async {
               if (_controller.text != '') {
                 db.sendMessageToGroup(widget.doc.documentID, _controller.text,
-                    widget.user.uid, 0);
+                    widget.user.uid, 0, widget.user.name);
                 _controller.clear();
               }
             },
@@ -167,7 +170,26 @@ class _GroupChatScreenState extends State<GroupChatScreen> {
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
-        title: Text(widget.doc['name']),
+        automaticallyImplyLeading: false,
+        titleSpacing: 0,
+        title: Row(
+          children: [
+            IconButton(
+              padding: EdgeInsets.only(right: 0),
+              icon: Icon(Icons.arrow_back),
+              onPressed: () {
+                Navigator.of(context).pop();
+              },
+            ),
+            CircleAvatar(
+              backgroundImage: NetworkImage(widget.doc['photourl']),
+            ),
+            SizedBox(
+              width: 10,
+            ),
+            Text(widget.doc['name']),
+          ],
+        ),
       ),
       body: StreamBuilder(
         stream: Firestore.instance
@@ -177,6 +199,7 @@ class _GroupChatScreenState extends State<GroupChatScreen> {
             .orderBy('time', descending: true)
             .snapshots(),
         builder: (context, snapshot) {
+          int prevCount = 0;
           return !snapshot.hasData
               ? SizedBox.shrink()
               : Column(
@@ -188,6 +211,16 @@ class _GroupChatScreenState extends State<GroupChatScreen> {
                             itemCount: snapshot?.data?.documents?.length,
                             itemBuilder: (context, index) {
                               var doc = snapshot?.data?.documents[index];
+                              int count = 0;
+                              for (int i = index; i >= 0; i--) {
+                                if (snapshot.data.documents[i]['fromUid'] ==
+                                    doc['fromUid']) {
+                                  if (count != 0) prevCount = count;
+                                  count++;
+                                }
+                              }
+                              print("prev" + prevCount.toString());
+                              print("count" + count.toString());
                               if (doc['fromUid'] != widget.user.uid)
                                 return Row(
                                   //To User
@@ -197,6 +230,20 @@ class _GroupChatScreenState extends State<GroupChatScreen> {
                                       crossAxisAlignment:
                                           CrossAxisAlignment.start,
                                       children: [
+                                        if (prevCount > count)
+                                          Padding(
+                                            padding: EdgeInsets.only(
+                                                top: 5,
+                                                left: 8,
+                                                right: 0,
+                                                bottom: 0),
+                                            child: Text(
+                                              doc['name'],
+                                              style: TextStyle(
+                                                  color: Colors.blue,
+                                                  fontWeight: FontWeight.bold),
+                                            ),
+                                          ),
                                         Padding(
                                           padding: const EdgeInsets.all(8.0),
                                           child: Container(
