@@ -547,6 +547,20 @@ class Database {
     return reqUsers;
   }
 
+  Future sendMessageToGroup(
+      String chatId, String content, String fromUid, int type) {
+    String time = Timestamp.now().millisecondsSinceEpoch.toString();
+    groupRef.document(chatId).collection(chatId).document(time).setData({
+      'content': content,
+      'fromUid': fromUid,
+      'time': time,
+      'type': type,
+    });
+    userRef.document(fromUid).updateData({
+      'chatIds': FieldValue.arrayUnion([chatId])
+    });
+  }
+
   Future createGroup(
       String uid, List<String> uids, String name, String photourl) {
     String str = getRandomString(20);
@@ -554,6 +568,7 @@ class Database {
       'admin': [uid],
       'members': uids,
       'time': DateTime.now(),
+      'creationTime': DateTime.now(),
       'name': name,
       'photourl': photourl
     });
@@ -688,6 +703,22 @@ class Database {
       'content': url,
       'fromUid': fromUid,
       'toUid': toUid,
+      'time': time,
+      'type': 1,
+    });
+  }
+
+  Future groupChatImageUpload(
+      {String chatId, File file, String fromUid}) async {
+    var task;
+    String time = Timestamp.now().millisecondsSinceEpoch.toString();
+    String filePath = 'chat/$chatId/$time.png';
+    _storageUploadTask = _firebaseStorage.ref().child(filePath).putFile(file);
+    task = await _storageUploadTask.onComplete;
+    var url = await task.ref.getDownloadURL();
+    msgRef.document(chatId).collection(chatId).document(time).setData({
+      'content': url,
+      'fromUid': fromUid,
       'time': time,
       'type': 1,
     });

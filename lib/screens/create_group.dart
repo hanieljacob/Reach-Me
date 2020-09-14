@@ -88,7 +88,7 @@ class _CreateGroupState extends State<CreateGroup> {
                   widget.selectedUids,
                   _controller.text,
                   url ??
-                      'https://631ae89fcd069a398187-ee282e5b70d98fac94cba689ef7806d7.ssl.cf1.rackcdn.com/default_group_normal.png');
+                      'https://sdg4a.org/wp-content/plugins/profilegrid-user-profiles-groups-and-communities/public/partials/images/default-group.jpg');
               int count = 0;
               Navigator.of(context).popUntil((route) => count++ == 2);
             } else

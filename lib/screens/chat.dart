@@ -5,6 +5,8 @@ import 'package:reach_me/screens/add_group.dart';
 import 'package:reach_me/screens/chat_screen.dart';
 import 'package:reach_me/services/database.dart';
 
+import 'group_chat_screen.dart';
+
 class ChatPage extends StatefulWidget {
   final String uid;
   final User user;
@@ -67,6 +69,41 @@ class _GroupChatState extends State<GroupChat> {
                             user: widget.user,
                           )));
             }),
+        Expanded(
+          child: StreamBuilder<QuerySnapshot>(
+            stream: Firestore.instance
+                .collection('Groups')
+                .orderBy('time')
+                .snapshots(),
+            builder: (context, snapshot) {
+              var docs = snapshot?.data?.documents;
+              return snapshot.hasData
+                  ? ListView.builder(
+                      itemBuilder: (context, index) {
+                        return !docs[index]['members'].contains(widget.user.uid)
+                            ? SizedBox.shrink()
+                            : ListTile(
+                                onTap: () {
+                                  Navigator.push(
+                                      context,
+                                      MaterialPageRoute(
+                                          builder: (context) => GroupChatScreen(
+                                              doc: docs[index],
+                                              user: widget.user)));
+                                },
+                                title: Text(docs[index]['name']),
+                                leading: CircleAvatar(
+                                  backgroundImage:
+                                      NetworkImage(docs[index]['photourl']),
+                                ),
+                              );
+                      },
+                      itemCount: docs.length,
+                    )
+                  : SizedBox.shrink();
+            },
+          ),
+        ),
       ],
     );
   }
